@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" , maximum-scale=1.0, user-scalable=no>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Leaflet Harita Kütüphanesi -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <title>Bizim Dünyamız</title>
+</head>
+
+<body>
+  <div class="app-container">
+
+    <!-- KİMLİK SEÇİM EKRANI -->
+    <div id="login-screen" class="login-overlay" style="display: none;">
+      <div class="login-box">
+        <h2>Hoş Geldin! ✨</h2>
+        <p>Devam etmek için kim olduğunu seç:</p>
+
+        <div class="user-select-container">
+          <button class="user-btn" onclick="loginAs('alpturk')">
+            <div class="user-avatar" style="background: var(--secondary);">🧑🏻</div>
+            <span>Alptürk</span>
+          </button>
+
+          <button class="user-btn" onclick="loginAs('elif')">
+            <div class="user-avatar" style="background: var(--primary);">👩🏻</div>
+            <span>Elif</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <header>
+      <!-- Sol Taraf: Başlık ve Selamlama -->
+      <div class="header-title">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h1>Bizim Dünyamız</h1>
+          <button id="theme-toggle" onclick="toggleTheme()"
+            style="background: none; border: none; font-size: 20px; color: var(--text-dark); cursor: pointer; transition: 0.3s;">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+        <p id="dynamic-greeting">Bugün de çok güzelsin bebeğim! ✨</p>
+      </div>
+
+      <!-- Sağ Taraf: Avatarlar ve Minik Mesafe Rozeti -->
+      <div class="header-right">
+        <div class="profile-pics">
+          <div class="profile-pic">🧑🏻</div>
+          <div class="profile-pic">👩🏻</div>
+        </div>
+
+        <!-- YENİ: Tıklanamaz, Küçük Mesafe Rozeti -->
+        <div class="live-distance-panel">
+          <i class="fa-solid fa-location-dot" style="color: var(--secondary);"></i>
+          <span id="header-distance-val">...</span> km
+        </div>
+      </div>
+    </header>
+
+    <!-- --- ANA İÇERİK --- -->
+    <div class="content" id="home-page">
+
+      <!-- --- SANAL EV (VIRTUAL ROOM) --- -->
+      <div class="virtual-room cozy-layout">
+
+        <!-- TAVAN VE IŞIKLAR (MOOD) -->
+        <div class="ceiling-lights">
+          <!-- Sol Spot (Elif - ID: elif-lamp) -->
+          <div id="elif-lamp" class="spotlight left-light" onclick="selectMood(this, 'duygusal')">
+            <div class="lamp lamp-pink"></div>
+            <div class="beam beam-pink"></div>
+          </div>
+          <!-- Sağ Spot (Alptürk - ID: alpturk-lamp) -->
+          <div id="alpturk-lamp" class="spotlight right-light" onclick="selectMood(this, 'mutlu')">
+            <div class="lamp lamp-yellow"></div>
+            <div class="beam beam-yellow"></div>
+          </div>
+        </div>
+
+        <!-- ODA İÇERİĞİ -->
+        <div class="room-walls">
+
+          <!-- SOL DUVAR VE KİTAPLIK -->
+          <div class="wall-section left-wall">
+            <!-- Çift Tablosu (Özel Günler) -->
+            <div class="frame calendar-frame"
+              onclick="switchTab('calendar', document.querySelectorAll('.nav-item')[1])">
+              <div class="cal-bind"></div>
+              <div class="cal-grid">
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+                <div class="red-box"></div>
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+                <div class="dark-box"></div>
+              </div>
+            </div>
+
+            <!-- Kitaplık -->
+            <div class="bookshelf">
+              <!-- Üst Raf (Dilek Ağacı) -->
+              <div class="shelf">
+                <div class="bonsai-tree" onclick="alert('Dilek Ağacı Çok Yakında 🌱')">
+                  <i class="fa-solid fa-tree"></i>
+                  <div class="pot"></div>
+                </div>
+              </div>
+              <!-- Alt Raf (Telsiz) -->
+              <div class="shelf">
+                <!-- Telsize Tıklama Özelliği (Notlar Sayfasını Açar) -->
+                <div class="walkie-talkie-container"
+                  onclick="switchTab('notes', document.querySelectorAll('.nav-item')[2])">
+                  <div class="antenna"></div>
+                  <div class="wt-body">
+                    <div class="wt-screen"></div>
+                    <div class="wt-speaker"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SAĞ DUVAR VE RAFLAR -->
+          <div class="wall-section right-wall">
+            <!-- Harita Tablosu (Mesafe) -->
+            <div class="frame map-frame" onclick="openLocationModal()">
+              <i class="fa-solid fa-earth-americas"></i>
+            </div>
+
+            <!-- Manzaralı Pencere (Rafların Yerine Geldi) -->
+            <div class="room-window">
+              <!-- Manzara (Dağ, Ay, Yıldızlar) -->
+              <div class="window-moon"></div>
+              <div class="window-star s1"></div>
+              <div class="window-star s2"></div>
+              <div class="window-mountain m1"></div>
+              <div class="window-mountain m2"></div>
+
+              <!-- Pencere Çıtaları -->
+              <div class="window-frame-vertical"></div>
+              <div class="window-frame-horizontal"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ZEMİN EŞYALARI -->
+        <div class="room-floor">
+          <!-- Sol Zemin: Koltuk ve Kedi -->
+          <div class="armchair-container" onclick="openPet()">
+            <div class="armchair">
+              <div class="cat-on-chair"><i class="fa-solid fa-cat"></i></div>
+            </div>
+          </div>
+
+          <!-- Sağ Zemin: Sehpa, Fincan ve Bilgisayar -->
+          <div class="table-container">
+            <div class="coffee-table">
+              <!-- Kahve Falı Fincanı -->
+              <div class="coffee-cup-container" onclick="alert('Günlük Çift Falınız Yakında! ☕')">
+                <div class="steam s-1"></div>
+                <div class="steam s-2"></div>
+                <div class="coffee-cup">
+                  <div class="cup-handle"></div>
+                </div>
+              </div>
+
+              <!-- Bilgisayar -->
+              <div class="desktop-pc" onclick="openGame()">
+                <div class="monitor">
+                  <div class="pc-screen"></div>
+                </div>
+                <div class="stand"></div>
+                <div class="base"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="content" id="calendar-page" style="display: none;">
+      <div class="period-card">
+        <div class="period-header">
+          <h3><i class="fa-solid fa-droplet"></i>Döngü Takibi</h3>
+          <span class="badge-safe" id="period-status-badge">Hesaplanıyor...</span>
+        </div>
+        <p id="period-text">Tahmini sonraki döngüye: <strong>...</strong></p>
+
+        <div class="period-progress">
+          <div class="progress-bar" id="period-progress-bar" style="width: 0%;"></div>
+        </div>
+        <!-- Sadece Elif'in göreceği buton alanı -->
+        <div id="period-action-area"></div>
+      </div>
+
+      <div class="special-days-header">
+        <h3>Özel Günlerimiz</h3>
+        <button class="add-btn" onclick="openModal()"><i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div class="special-days-list" id="special-days-container">
+
+      </div>
+
+    </div>
+
+    <!-- CANLI KONUM MODALI -->
+    <div id="location-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-box" style="width: 90%; max-width: 800px; padding: 15px;">
+        <span class="close-btn" onclick="closeLocationModal()"><i class="fa-solid fa-xmark"></i></span>
+        
+        <h3 style="margin-bottom: 10px;">Haritamız 📍</h3>
+
+        <div id="map"></div>
+      </div>
+    </div>
+
+    <!-- IŞIK MODU SEÇİM MODALI -->
+    <div id="mood-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-box">
+        <span class="close-btn" onclick="closeMoodModal()"><i class="fa-solid fa-xmark"></i></span>
+        <h3>Modunu Seç 💡</h3>
+        <div class="mood-select-grid">
+          <button class="mood-option" onclick="applyMood('duygusal', '#d28fb0')">Duygusal (Pembe) 🌸</button>
+          <button class="mood-option" onclick="applyMood('mutlu', '#e5cd85')">Mutlu (Sarı) ✨</button>
+          <button class="mood-option" onclick="applyMood('huzurlu', '#64C8C0')">Huzurlu (Turkuaz) 🌊</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTLAR SAYFASI -->
+    <div class="content" id="notes-page" style="display: none;">
+      <div class="chat-header">
+        <h3>Dijital Post-it'lerimiz 📝</h3>
+        <p>Ona tatlı bir not bırak...</p>
+      </div>
+
+      <div class="chat-container" id="chat-box">
+        <!-- Elif'in Mesajı -->
+        <div class="message-bubble received">
+          <div class="msg-avatar">👩🏻</div>
+          <div class="msg-content">
+            <p>Zomboid oynamaya ne zaman devam ediyoruz? Zombiler kapıya dayandı! 🧟‍♀️</p>
+            <span class="msg-time">19:15</span>
+          </div>
+        </div>
+
+        <!-- Senin Mesajın -->
+        <div class="message-bubble sent">
+          <div class="msg-content">
+            <p>Hemen geliyorum bebeğim, lootları hazırlıyorum! 🎒💖</p>
+            <span class="msg-time">19:23 <i class="fa-solid fa-check-double msg-tick"></i></span>
+          </div>
+          <div class="msg-avatar">🧑🏻</div>
+        </div>
+      </div>
+
+      <!-- Mesaj Yazma Alanı -->
+      <div class="chat-input-area">
+        <input type="text" id="message-input" placeholder="Tatlı bir mesaj yaz...">
+        <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <!-- HAFIZA OYUNU SAYFASI -->
+    <div class="content" id="game-page" style="display: none;">
+      <div class="game-header">
+        <button class="back-btn" onclick="closeGame()"><i class="fa-solid fa-chevron-left"></i>Geri</button>
+        <h3>Anı Eşleştirme 🧩</h3>
+        <div style="width: 30px;"></div> <!-- Ortalamak için boşluk -->
+      </div>
+
+      <div class="game-info">
+        <p>Aynı anıları bul! Hata Sayısı: <span id="mistake-count"
+            style="color: var(--primary); font-weight: bold;">0</span></p>
+      </div>
+
+      <!-- Oyun tahtası -->
+      <div class="memory-board" id="memory-board">
+        <!-- Kartlar buraya gelecek -->
+      </div>
+    </div>
+
+    <!-- SANAL BEBEK SAYFASI -->
+    <div class="content" id="pet-page" style="display: none;">
+
+      <div class="game-header">
+        <button class="back-btn" onclick="closePet()"><i class="fa-solid fa-chevron-left"></i> Ev</button>
+        <h3>Ortak Bebeğimiz 🐾</h3>
+        <div style="width: 30px;"></div>
+      </div>
+
+      <!-- Bebeğin Durum Barları -->
+      <div class="pet-status-container">
+        <div class="status-row">
+          <span>🍗 Tokluk</span>
+          <div class="status-bar-bg">
+            <div class="status-bar-fill" style="width: 60%; background: #FFB74D;"></div>
+          </div>
+        </div>
+        <div class="status-row">
+          <span>💖 Mutluluk</span>
+          <div class="status-bar-bg">
+            <div class="status-bar-fill" style="width: 85%; background: var(--primary);"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Bebeğin Sahnesi ve Kendisi -->
+      <div class="pet-stage">
+        <!-- Yapay Zeka'nın mesaj yazacağı baloncuk -->
+        <div class="pet-speech-bubble" id="pet-message">
+          Miyav! Elif annem nerede? 🥺
+        </div>
+
+        <!-- Şimdilik emoji, isterseniz kedi/köpek GIF'i de koyabiliriz -->
+        <div class="pet-avatar" id="the-pet">🐱</div>
+        <div class="pet-shadow"></div>
+      </div>
+
+      <!-- Etkileşim Butonları -->
+      <div class="pet-actions">
+        <button class="pet-btn" onclick="feedPet()"><i class="fa-solid fa-fish"></i> Mama Ver</button>
+        <button class="pet-btn" onclick="lovePet()"><i class="fa-solid fa-hand-holding-heart"></i> Sev</button>
+        <button class="pet-btn"><i class="fa-solid fa-shirt"></i> Giydir</button>
+      </div>
+    </div>
+
+
+    <!-- ALT MENÜ -->
+
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('home', this)">
+        <i class="fa-solid fa-house"></i>
+        <span>Ana Sayfa</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('calendar', this)">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>Takvim</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('notes', this)">
+        <i class="fa-solid fa-comment"></i>
+        <span>Notlar</span>
+      </div>
+    </div>
+
+
+    <div id="add-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-box">
+        <span class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></span>
+        <h3>Yeni Özel Gün</h3>
+        <form id="add-day-form">
+          <input type="text" id="day-title" placeholder="Günün Adı" required>
+          <input type="date" id="day-date" required>
+
+          <select id="day-icon">
+            <option value="fa-heart">❤️ Kalp İkonu</option>
+            <option value="fa-plane">✈️ Tatil İkonu</option>
+            <option value="fa-star">⭐ Yıldız İkonu</option>
+            <option value="fa-calendar-check">📅 Takvim İkonu</option>
+          </select>
+
+          <button type="submit" class="btn-save">Listeye Ekle ✨</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="period-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-box">
+        <span class="close-btn" onclick="closePeriodModal()"><i class="fa-solid fa-xmark"></i></span>
+        <h3>Döngüyü Güncelle 🌸</h3>
+        <form id="update-period-form">
+          <label
+            style="font-size: 13px; color: var(--text-light); margin-bottom: 5px; display: block; text-align: left;">Yeni
+            Başlangıç Tarihi:</label>
+          <input type="date" id="new-period-date" required>
+
+          <label
+            style="font-size: 13px; color: var(--text-light); margin-bottom: 5px; display: block; text-align: left;">Alptürk'e
+            Notun (Opsiyonel):</label>
+          <input type="text" id="period-note" placeholder="Örn: Canım çok çikolata istiyor... 🍫">
+          <button type="submit" class="btn-save" style="background: var(--primary);">Güncelle ✨</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>

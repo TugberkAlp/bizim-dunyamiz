@@ -1,0 +1,33 @@
+/* --- RENK PALETİMİZ --- */
+:root {
+  --bg-color: #F9F6FC;
+  /* Çok uçuk lila/mor arka plan */
+  --primary: #C3B1E1;
+  /* Elif'in Pastel Moru */
+  --secondary: #64C8C0;
+  /* Alptürk'ün Turkuazı (Sakin ve pastel bir ton) */
+  --accent: #9B59B6;
+  /* Vurgu Moru */
+  --text-dark: #4A3F55;
+  /* Siyaha çalan morumsu koyu gri (Okunabilirlik için) */
+  --text-light: #8A7B92;
+  /* Açık lila/gri metinler */
+  --card-bg: #FFFFFF;
+  /* Kart arka planları */
+}
+
+/* --- KARANLIK MOD RENKLERİ --- */
+body.dark-mode {
+  --bg-color: #161625;
+  /* Çok koyu lacivert/siyah arka plan */
+  --primary: #764BA2;
+  /* Koyu ve sakin bir mor */
+  --secondary: #3B827B;
+  /* Koyu turkuaz */
+  --text-dark: #EAEAEA;
+  /* Açık gri (Beyaza yakın) metinler */
+  --text-light: #A0A0B0;
+  /* Koyu gri alt metinler */
+  --card-bg: #232336;
+  /* Kartlar için koyu arka plan */
+}

@@ -1,0 +1,87 @@
+/* --- HAFIZA OYUNU EKRANI --- */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.game-info {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+/* Oyun Tahtası (Izgara) */
+.memory-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* 3 sütunlu bir yapı */
+  gap: 15px;
+  perspective: 1000px;
+  /* 3D efektin derinliği için çok önemli! */
+}
+
+/* Tek Bir Kartın Dış Kutusu */
+.memory-card {
+  aspect-ratio: 1 / 1;
+  /* Kare olmasını sağlar */
+  cursor: pointer;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+  /* Dönüş hızı (Yarım saniye) */
+}
+
+/* Karta .flip sınıfı eklendiğinde Y ekseninde 180 derece döner */
+.memory-card.flip {
+  transform: rotateY(180deg);
+}
+
+/* Kartın Önü ve Arkası (İkisi de aynı kutunun içinde üst üste biner) */
+.card-front,
+.card-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  border-radius: 16px;
+  backface-visibility: hidden;
+  /* Kartın arkası dönükken içini gizler */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Kartın Arkası (Oyun başındaki kapalı hali) */
+.card-back {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+}
+
+/* Kartın Önü (Açılınca çıkacak resim/ikon kısmı) */
+.card-front {
+  background: white;
+  transform: rotateY(180deg);
+  /* Başlangıçta ters durmalı ki çevrilince düzelsin */
+}
+
+/* --- SANAL BEBEK VE OYUN EKRANI BAŞLIK DÜZELTMELERİ --- */
+
+/* 1. Başlık Rengini Yumuşatma (Gündüz Modu) */
+.game-header h3 {
+  color: var(--text-dark);
+}

@@ -1,0 +1,118 @@
+/* --- SANAL BEBEK EKRANI --- */
+.pet-status-container {
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.status-row:last-child {
+  margin-bottom: 0;
+}
+
+.status-bar-bg {
+  width: 65%;
+  height: 12px;
+  background: #F0F0F0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.status-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+
+/* Bebeğin Sahnesi (Oda) */
+.pet-stage {
+  height: 250px;
+  background: linear-gradient(to bottom, #E6E6FA, #FFF);
+  /* Tatlı bir gökyüzü-yer geçişi */
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+  margin-bottom: 25px;
+  box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.02);
+}
+
+.pet-speech-bubble {
+  position: absolute;
+  top: 20px;
+  background: white;
+  padding: 10px 15px;
+  border-radius: 16px;
+  font-size: 13px;
+  color: var(--text-dark);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  animation: popIn 0.3s ease-out;
+}
+
+.pet-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: white transparent transparent transparent;
+}
+
+/* Bebeğin Kendisi ve Nefes Alma Animasyonu */
+.pet-avatar {
+  font-size: 80px;
+  margin-bottom: 10px;
+  animation: breathe 2s infinite ease-in-out;
+  z-index: 2;
+  transition: transform 0.2s;
+}
+
+.pet-shadow {
+  width: 60px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  margin-bottom: 20px;
+  animation: shadowBreathe 2s infinite ease-in-out;
+}
+
+/* Etkileşim Butonları */
+.pet-actions {
+  display: flex;
+  justify-content: space-around;
+}
+
+.pet-btn {
+  background: white;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  padding: 12px 15px;
+  border-radius: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+  flex: 1;
+  margin: 0 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.pet-btn:active {
+  transform: scale(0.9);
+  background: var(--primary);
+  color: white;
+}

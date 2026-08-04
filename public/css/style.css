@@ -1,0 +1,13 @@
+@import url('variables.css');
+@import url('base.css');
+@import url('header.css');
+@import url('navigation.css');
+@import url('calendar.css');
+@import url('notes.css');
+@import url('modal.css');
+@import url('login.css');
+@import url('memory-game.css');
+@import url('virtual-pet.css');
+@import url('virtual-room.css');
+@import url('animations.css');
+@import url('darkmode.css');

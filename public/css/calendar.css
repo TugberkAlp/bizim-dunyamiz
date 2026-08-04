@@ -1,0 +1,217 @@
+/* --- TAKVİM SAYFASI --- */
+
+.period-card {
+  background: #FFF0F5;
+  border-radius: 24px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 5px 15px rgba(255, 182, 193, 0.2);
+  border: 2px solid #FFE4E1;
+}
+
+.period-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.period-header h3 {
+  font-size: 16px;
+  color: #D87093;
+}
+
+.badge-safe {
+  background: #E8F5E9;
+  color: #4CAF50;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.period-card p {
+  font-size: 14px;
+  color: var(--text-dark);
+  margin-bottom: 15px;
+}
+
+.period-progress {
+  height: 8px;
+  background: white;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--secondary), var(--primary));
+  border-radius: 10px;
+}
+
+.btn-small {
+  width: 100%;
+  background: white;
+  border: none;
+  padding: 10px;
+  border-radius: 12px;
+  color: #D87093;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: 0.2s;
+}
+
+.btn-small:active {
+  transform: scale(0.95);
+}
+
+.special-days-header h3 {
+  font-size: 18px;
+  color: var(--text-dark);
+}
+
+.add-btn {
+  width: 35px;
+  height: 35px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(255, 182, 193, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.add-btn:active {
+  transform: scale(0.9);
+}
+
+.special-day-item {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.day-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 20px;
+}
+
+.day-info {
+  flex: 1;
+}
+
+.day-info h4 {
+  font-size: 15px;
+  margin-bottom: 3px;
+}
+
+.day-info p {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.day-countdown {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.day-countdown span {
+  display: block;
+  font-size: 20px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* --- GECE MODU VE TAKVİM İNCE AYARLARI --- */
+
+/* 1. Özel Günler Header ve + Butonu Milimetrik Hizalaması */
+.special-days-header h3 {
+  margin: 0 !important;
+  line-height: 1;
+}
+
+.special-days-header {
+  align-items: center;
+  /* Tam karşı karşıya hizalar */
+}
+
+/* 2. Özel Günler Yeni Tasarımı (Tarih Sonda, Gün Yanyana) */
+.day-info {
+  flex: 1;
+  /* Araya boşluk atıp sağdaki elemanları en sona iter */
+}
+
+.day-info h4 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-dark);
+}
+
+.day-end {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.day-date {
+  font-size: 12px;
+  color: var(--text-light);
+  opacity: 0.8;
+}
+
+.day-countdown {
+  display: flex;
+  align-items: baseline;
+  /* Sayı ile 'Gün' yazısını alt hizadan mükemmel eşitler */
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.day-countdown span {
+  font-size: 20px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* --- ÖZEL GÜNLER BAŞLIK HİZALAMASI (KESİN ÇÖZÜM) --- */
+.special-days-header {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100%;
+}
+
+.special-days-header h3 {
+  margin: 0 !important;
+  flex-shrink: 0;
+  /* Başlığın sıkışıp şekil değiştirmesini engeller */
+}
+
+.add-btn {
+  margin-top: 0 !important;
+  flex-shrink: 0;
+  /* Butonun küçülmesini engeller */
+}

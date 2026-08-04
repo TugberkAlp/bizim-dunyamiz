@@ -1,0 +1,139 @@
+/* --- GECE MODU İÇİN SABİT PARLAK RENKLERİ EZME --- */
+
+/* 1. Başlıktaki parlak geçişi koyulaştırıyoruz */
+body.dark-mode header {
+  background: linear-gradient(135deg, var(--card-bg), #1a1a24);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* 2. Döngü Takibi kartındaki parlak pembeyi kapatıyoruz */
+body.dark-mode .period-card {
+  background: #251d30;
+  /* Koyu morumsu lacivert */
+  border-color: #382c47;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .period-header h3 {
+  color: var(--primary);
+  /* Başlık rengi daha sakin bir mor */
+}
+
+/* 3. Döngü Takibi içindeki Güvenli/Tehlikeli uyarı balonu */
+body.dark-mode .badge-safe {
+  background: rgba(76, 175, 80, 0.15);
+  color: #81c784;
+}
+
+/* 4. Döngü Takibi kartı içindeki "Güncelle" butonu */
+body.dark-mode .btn-small {
+  background: #382c47;
+  color: #EAEAEA;
+  box-shadow: none;
+}
+
+/* 5. Alt Menü parlaklığını kısıyoruz */
+body.dark-mode .bottom-nav {
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Bilgisayarda dış arkaplanın da kararması için */
+body.dark-mode {
+  background-color: #0a0a10;
+}
+
+/* Gece Modu İçin Düzeltme */
+body.dark-mode .pet-stage {
+  background: linear-gradient(to bottom, #2A2A35, #1E1E28);
+}
+
+body.dark-mode .pet-speech-bubble {
+  background: var(--card-bg);
+  color: var(--text-dark);
+}
+
+body.dark-mode .pet-speech-bubble::after {
+  border-color: var(--card-bg) transparent transparent transparent;
+}
+
+body.dark-mode .status-bar-bg {
+  background: #382c47;
+}
+
+/* 2. Gece Modunda Geri Butonu Düzeltmesi */
+body.dark-mode .back-btn {
+  background: #382c47;
+  /* Gece moduna uygun koyu arka plan */
+  color: var(--primary);
+  /* Yazı ve ikon rengi pastel mor */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 3. Gece Modunda Başlık Rengi */
+body.dark-mode .game-header h3 {
+  color: var(--text-dark);
+  /* Gece modunda aydınlık, okunaklı renk */
+}
+
+/* 3. Gece Modunda Kararan Yazılar İçin Düzeltme */
+body.dark-mode .day-info h4,
+body.dark-mode .special-days-header h3 {
+  color: #EAEAEA;
+  /* Gece modunda siyahları okunaklı kreme çevirir */
+}
+
+/* 4. Gece Modunda Gelen Mesaj Baloncuğu Rengi */
+body.dark-mode .message-bubble.received .msg-content {
+  background: #382c47;
+  /* Gece moduna uygun tatlı, koyu bir mor */
+  color: #EAEAEA;
+  /* Üzerindeki yazıyı beyazımsı yapar */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* --- GECE MODUNDA AÇILIR PENCERE (MODAL) DÜZELTMELERİ --- */
+body.dark-mode .modal-box {
+  background: var(--card-bg);
+  /* Kutu arkaplanını beyaza değil, koyu kart rengine boyar */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .modal-box input,
+body.dark-mode .modal-box select {
+  background: #1a1a24;
+  /* Veri girilen yerleri daha koyu bir lacivert yapar */
+  border: 1px solid #382c47;
+  /* Kenarlıkları temanın koyu moruyla uyumlu hale getirir */
+  color: var(--text-dark);
+  /* İçine yazdığın yazının okunmasını sağlar */
+}
+
+body.dark-mode .modal-box input::placeholder {
+  color: var(--text-light);
+  /* 'Günün Adı (Örn: İlk Buluşma)' gibi silik yönlendirme yazılarını düzeltir */
+}
+
+/* Modal Kapatma Çarpısı (X) */
+body.dark-mode .close-btn {
+  color: var(--text-dark);
+}
+
+body.dark-mode .virtual-room {
+  background: linear-gradient(to bottom, #232336 0%, #1a1a24 100%);
+  /* Gece Duvarı */
+  border-color: #382c47;
+}
+
+body.dark-mode .room-floor {
+  background: linear-gradient(to bottom, #4A3F55 0%, #382c47 100%);
+}
+
+body.dark-mode .room-item span {
+  background: rgba(35, 35, 54, 0.8);
+  color: #EAEAEA;
+}
+
+body.dark-mode .live-distance-panel {
+  color: #EAEAEA;
+  background: rgba(100, 200, 192, 0.1);
+}
