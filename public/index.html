@@ -91,8 +91,7 @@
           <!-- SOL DUVAR VE KİTAPLIK -->
           <div class="wall-section left-wall">
             <!-- Çift Tablosu (Özel Günler) -->
-            <div class="frame calendar-frame"
-              onclick="switchTab('calendar')">
+            <div class="frame calendar-frame" onclick="switchTab('calendar')">
               <div class="cal-bind"></div>
               <div class="cal-grid">
                 <div class="dark-box"></div>
@@ -122,8 +121,7 @@
               <!-- Alt Raf (Telsiz) -->
               <div class="shelf">
                 <!-- Telsize Tıklama Özelliği (Notlar Sayfasını Açar) -->
-                <div class="walkie-talkie-container"
-                  onclick="switchTab('notes')">
+                <div class="walkie-talkie-container" onclick="switchTab('notes')">
                   <div class="antenna"></div>
                   <div class="wt-body">
                     <div class="wt-screen"></div>
@@ -194,6 +192,11 @@
     </div>
 
     <div class="content" id="calendar-page" style="display: none;">
+      <div class="game-header" style="margin-bottom: 20px;">
+        <button class="back-btn" onclick="switchTab('home')"><i class="fa-solid fa-chevron-left"></i></button>
+        <h3>Takvim 📅</h3>
+        <div style="width: 70px;"></div>
+      </div>
       <div class="period-card">
         <div class="period-header">
           <h3><i class="fa-solid fa-droplet"></i>Döngü Takibi</h3>
@@ -213,16 +216,14 @@
         <button class="add-btn" onclick="openModal()"><i class="fa-solid fa-plus"></i></button>
       </div>
       <div class="special-days-list" id="special-days-container">
-
       </div>
-
     </div>
 
     <!-- CANLI KONUM MODALI -->
     <div id="location-modal" class="modal-overlay" style="display: none;">
       <div class="modal-box" style="width: 90%; max-width: 800px; padding: 15px;">
         <span class="close-btn" onclick="closeLocationModal()"><i class="fa-solid fa-xmark"></i></span>
-        
+
         <h3 style="margin-bottom: 10px;">Haritamız 📍</h3>
 
         <div id="map"></div>
@@ -244,11 +245,14 @@
 
     <!-- NOTLAR SAYFASI -->
     <div class="content" id="notes-page" style="display: none;">
-      <div class="chat-header">
-        <h3>Dijital Post-it'lerimiz 📝</h3>
-        <p>Ona tatlı bir not bırak...</p>
+      <div class="game-header" style="margin-bottom: 20px;">
+        <button class="back-btn" onclick="switchTab('home')"><i class="fa-solid fa-chevron-left"></i> Ev</button>
+        <div style="text-align: center;">
+          <h3 style="color: var(--text-dark); font-size: 18px; margin: 0;">Dijital Post-it 📝</h3>
+          <p style="color: var(--text-light); font-size: 12px; margin-top: 3px;">Ona tatlı bir not bırak...</p>
+        </div>
+        <div style="width: 70px;"></div> <!-- Ortalamak için görünmez boşluk -->
       </div>
-
       <div class="chat-container" id="chat-box">
         <!-- Elif'in Mesajı -->
         <div class="message-bubble received">
