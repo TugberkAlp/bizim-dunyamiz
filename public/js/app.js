@@ -430,6 +430,10 @@ async function loadMessages() {
 
       chatBox.innerHTML += messageHTML;
     });
+
+    setTimeout(() => {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }, 100);
   } catch (error) {
     console.log("Mesajlar yüklenemedi:", error);
     chatBox.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-light);">Bağlantı hatası veya kod dizilimi hatası oluştu.</div>`;
