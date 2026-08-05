@@ -15,6 +15,9 @@ let periodData = {
 };
 
 let partnerLocation = { lat: 0, lng: 0, speed: "0.0" };
+let myLastLat = 40.7434;
+let myLastLng = 30.0168;
+
 // HARİTA DEĞİŞKENLERİ
 let map = null;
 let myMarker = null;
@@ -649,6 +652,9 @@ function updateLiveDistance() {
         const myLng = location.longitude;
         const speed = location.speed ? (location.speed * 3.6).toFixed(1) : "0.0";
 
+        myLastLat = myLat;
+        myLastLng = myLng;
+
         const distance = calculateDistance(myLat, myLng, partnerLocation.lat, partnerLocation.lng);
 
         if (headerVal) headerVal.innerText = distance.toFixed(1);
@@ -730,19 +736,16 @@ async function loadLocations() {
         partnerLocation.lng = loc.lng;
         partnerLocation.speed = loc.speed || "0.0";
 
-        // 1. Eğer harita açıksa partnerin pinini hemen gerçek konumuna taşı
+        // Harita açıksa partnerin pinini anında yerine koy
         if (map && partnerMarker) {
           partnerMarker.setLatLng([loc.lat, loc.lng]);
           partnerMarker.setIcon(createProfileIcon(partnerPhoto, loc.speed));
         }
 
-        // 2. Header'daki mesafeyi 0,0 varsayımıyla değil, gelen GERÇEK konumla hemen yeniden hesapla
-        if (myMarker) {
-          const myPos = myMarker.getLatLng();
-          const distance = calculateDistance(myPos.lat, myPos.lng, loc.lat, loc.lng);
-          const headerVal = document.getElementById('header-distance-val');
-          if (headerVal) headerVal.innerText = distance.toFixed(1);
-        }
+        // Veritabanından gelen gerçek konumla mesafeyi HEMEN yeniden hesapla (0,0 hatasını önler)
+        const distance = calculateDistance(myLastLat, myLastLng, loc.lat, loc.lng);
+        const headerVal = document.getElementById('header-distance-val');
+        if (headerVal) headerVal.innerText = distance.toFixed(1);
       }
     });
   } catch (error) {
@@ -825,11 +828,19 @@ function openLocationModal() {
   const modal = document.getElementById('location-modal');
   modal.style.display = 'flex';
 
-  if (map) {
-    setTimeout(() => { map.invalidateSize(); }, 100);
+  // Eğer harita daha önce hiç açılmadıysa hemen ilk kurulumunu yap
+  if (!map) {
+    updateMap(myLastLat, myLastLng, "0.0");
+  } else {
+    setTimeout(() => { 
+      map.invalidateSize(); 
+      if (myMarker && partnerMarker) {
+        const group = new L.featureGroup([myMarker, partnerMarker]);
+        map.fitBounds(group.getBounds().pad(0.3));
+      }
+    }, 100);
   }
 }
-
 function closeLocationModal() {
   document.getElementById('location-modal').style.display = 'none';
 }
