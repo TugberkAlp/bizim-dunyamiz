@@ -9,7 +9,7 @@ let periodData = {
   cycleLength: 28
 };
 
-let partnerLocation = { lat: 0, lng: 0 };
+let partnerLocation = { lat: 0, lng: 0, speed: "0.0" };
 // HARİTA DEĞİŞKENLERİ
 let map = null;
 let myMarker = null;
@@ -664,6 +664,7 @@ async function loadLocations() {
       if(loc.user !== currentUser) {
         partnerLocation.lat = loc.lat;
         partnerLocation.lng = loc.lng;
+        partnerLocation.speed = loc.speed || "0.0";
       }
     });
   } catch (error) {
@@ -774,8 +775,7 @@ function updateMap(myLat, myLng, speed) {
 
     // Bizim Canlı PİNLERİMİZİ Ekle (Fotoğraflı)
     myMarker = L.marker([myLat, myLng], { icon: createProfileIcon(myPhoto, speed) }).addTo(map);
-    // Elif'in hızı şimdilik statik '0.0' (Sunucu kurulunca o da dinamik olacak)
-    partnerMarker = L.marker([partnerLocation.lat, partnerLocation.lng], { icon: createProfileIcon(partnerPhoto, "0.0") }).addTo(map);
+    partnerMarker = L.marker([partnerLocation.lat, partnerLocation.lng], { icon: createProfileIcon(partnerPhoto, partnerLocation.speed) }).addTo(map);
   } else {
     myMarker.setLatLng([myLat, myLng]);
     myMarker.setIcon(createProfileIcon(myPhoto, speed));
