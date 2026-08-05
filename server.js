@@ -136,6 +136,10 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('updatePartnerLocation', data);
   })
 
+  socket.on('chatMessageSent', () => {
+    socket.broadcast.emit('refreshMessages');
+  });
+
   socket.on('disconnect', () => {
     console.log('Bir cihaz ayrıldı:', socket.id);
   });

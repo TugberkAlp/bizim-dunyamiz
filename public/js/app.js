@@ -434,6 +434,7 @@ async function sendMessage() {
     if (response.ok) {
       inputField.value = '';
       loadMessages();
+      socket.emit('chatMessageSent');
     }
   } catch (error) {
     console.log("Mesaj gönderilemedi:", error);
@@ -791,3 +792,7 @@ socket.on('updatePartnerLocation', (data) => {
     if (headerVal) headerVal.innerText = newDistance.toFixed(1);
   }
 });
+
+socket.on('refreshMessages', () => {
+  loadMessages();
+})
