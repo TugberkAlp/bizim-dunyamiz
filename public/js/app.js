@@ -618,11 +618,58 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
-/*
+
+// --- YENİ VE GÜÇLÜ: ARKA PLAN CANLI KONUM SİSTEMİ ---
 function updateLiveDistance() {
   const headerVal = document.getElementById('header-distance-val');
 
-  if (navigator.geolocation) {
+  // 1. Eğer telefondaysak (Capacitor ortamı aktifse) arka plan takibini çalıştır
+  if (BackgroundGeolocation) {
+    BackgroundGeolocation.addWatcher(
+      {
+        backgroundMessage: "Bizim Dünyamız arka planda konumunuzu güncelliyor.",
+        backgroundTitle: "Bizim Dünyamız",
+        requestPermissions: true, 
+        stale: false,
+        distanceFilter: 10 
+      },
+      function callback(location, error) {
+        if (error) {
+          if (error.code === "NOT_AUTHORIZED") {
+            if (confirm("Uygulamanın çalışması için ayarlardan 'Her Zaman İzin Ver' seçeneğini açmalısın. Ayarlara gidelim mi?")) {
+              BackgroundGeolocation.openSettings();
+            }
+          }
+          return console.error("Konum hatası:", error);
+        }
+
+        const myLat = location.latitude;
+        const myLng = location.longitude;
+        const speed = location.speed ? (location.speed * 3.6).toFixed(1) : "0.0";
+        
+        const distance = calculateDistance(myLat, myLng, partnerLocation.lat, partnerLocation.lng);
+
+        if (headerVal) headerVal.innerText = distance.toFixed(1);
+
+        const modal = document.getElementById('location-modal');
+        if (modal && modal.style.display === 'flex') {
+          updateMap(myLat, myLng, speed);
+        }
+
+        socket.emit('sendLocation', {
+          user: currentUser,
+          lat: myLat,
+          lng: myLng,
+          speed: speed
+        });
+      }
+    ).then(function (watcher_id) {
+      console.log("Arka plan izleyici ID'si:", watcher_id);
+    });
+  } 
+  // 2. Eğer bilgisayarda/tarayıcıda test ediyorsak standart tarayıcı konumunu kullan (Uygulama çökmesin)
+  else if (navigator.geolocation) {
+    console.log("Tarayıcı (Web) konumu kullanılıyor...");
     navigator.geolocation.watchPosition(
       (position) => {
         const myLat = position.coords.latitude;
@@ -633,7 +680,7 @@ function updateLiveDistance() {
         if (headerVal) headerVal.innerText = distance.toFixed(1);
 
         const modal = document.getElementById('location-modal');
-        if (modal.style.display === 'flex') {
+        if (modal && modal.style.display === 'flex') {
           updateMap(myLat, myLng, speed);
         }
 
@@ -645,72 +692,13 @@ function updateLiveDistance() {
         });
       },
       (error) => {
-        const speedData = document.getElementById('live-speed-data');
-        if (headerVal) headerVal.innerText = "Hata";
-        if (modalData) modalData.innerHTML = '<p>Konum izni reddedildi. Lütfen ayarlardan izin ver.</p>';
+        console.log("Web konum alınamadı:", error);
       },
       { enableHighAccuracy: true, maximumAge: 0 }
     );
   }
 }
-*/
 
-// --- YENİ VE GÜÇLÜ: ARKA PLAN CANLI KONUM SİSTEMİ ---
-function updateLiveDistance() {
-  const headerVal = document.getElementById('header-distance-val');
-
-  // Arka Plan Bekçisini Başlatıyoruz
-  BackgroundGeolocation.addWatcher(
-    {
-      // Ayarlar: 
-      backgroundMessage: "Bizim Dünyamız arka planda konumunuzu güncelliyor.",
-      backgroundTitle: "Bizim Dünyamız",
-      requestPermissions: true, // "Her Zaman İzin Ver" yetkisini ister
-      stale: false,
-      distanceFilter: 10 // Kullanıcı 10 metre hareket ettiğinde tetiklenir (Şarjı korur)
-    },
-    function callback(location, error) {
-      if (error) {
-        if (error.code === "NOT_AUTHORIZED") {
-          if (confirm("Uygulamanın çalışması için ayarlardan 'Her Zaman İzin Ver' seçeneğini açmalısın. Ayarlara gidelim mi?")) {
-            BackgroundGeolocation.openSettings();
-          }
-        }
-        return console.error("Konum hatası:", error);
-      }
-
-      // Konum Başarıyla Alındı!
-      const myLat = location.latitude;
-      const myLng = location.longitude;
-      // Capacitor hızı metre/saniye verir, km/s'ye çeviriyoruz
-      const speed = location.speed ? (location.speed * 3.6).toFixed(1) : "0.0";
-      
-      const distance = calculateDistance(myLat, myLng, partnerLocation.lat, partnerLocation.lng);
-
-      // 1. Ekrandaki yazıyı güncelle
-      if (headerVal) headerVal.innerText = distance.toFixed(1);
-
-      // 2. Harita açıksa pini yürüt
-      const modal = document.getElementById('location-modal');
-      if (modal && modal.style.display === 'flex') {
-        updateMap(myLat, myLng, speed);
-      }
-
-      // 3. Postacıya (Socket.io) yeni konumu fırlat (Arkada planda olsak bile!)
-      socket.emit('sendLocation', {
-        user: currentUser,
-        lat: myLat,
-        lng: myLng,
-        speed: speed
-      });
-      
-      console.log("Arka plan konumu başarıyla gönderildi!");
-    }
-  ).then(function afterPromise(watcher_id) {
-    // İzleyici başarıyla kuruldu
-    console.log("Arka plan izleyici ID'si:", watcher_id);
-  });
-}
 async function loadLocations() {
   try {
     const response = await fetch(SERVER_URL + '/api/locations');
