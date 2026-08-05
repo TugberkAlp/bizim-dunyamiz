@@ -629,11 +629,11 @@ function updateLiveDistance() {
       {
         backgroundMessage: "Bizim Dünyamız arka planda konumunuzu güncelliyor.",
         backgroundTitle: "Bizim Dünyamız",
-        requestPermissions: true, 
+        requestPermissions: true,
         stale: false,
         stopOnTerminate: false,
         startOnBoot: true,
-        distanceFilter: 10 
+        distanceFilter: 10
       },
       (location, error) => {
         if (error) {
@@ -648,7 +648,7 @@ function updateLiveDistance() {
         const myLat = location.latitude;
         const myLng = location.longitude;
         const speed = location.speed ? (location.speed * 3.6).toFixed(1) : "0.0";
-        
+
         const distance = calculateDistance(myLat, myLng, partnerLocation.lat, partnerLocation.lng);
 
         if (headerVal) headerVal.innerText = distance.toFixed(1);
@@ -658,17 +658,29 @@ function updateLiveDistance() {
           updateMap(myLat, myLng, speed);
         }
 
-        socket.emit('sendLocation', {
-          user: currentUser,
-          lat: myLat,
-          lng: myLng,
-          speed: speed
-        });
+        if (socket.connected) {
+          socket.emit('sendLocation', {
+            user: currentUser,
+            lat: myLat,
+            lng: myLng,
+            speed: speed
+          });
+        }
+        fetch(SERVER_URL + '/api/locations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: currentUser,
+            lat: myLat,
+            lng: myLng,
+            speed: speed
+          })
+        }).catch(err => console.log("Arka plan konum HTTP gönderim hatası:", err));
       }
     ).then(function (watcher_id) {
       console.log("Arka plan izleyici ID'si:", watcher_id);
     });
-  } 
+  }
   // 2. Eğer bilgisayarda/tarayıcıda test ediyorsak standart tarayıcı konumunu kullan (Uygulama çökmesin)
   else if (navigator.geolocation) {
     console.log("Tarayıcı (Web) konumu kullanılıyor...");
@@ -692,6 +704,12 @@ function updateLiveDistance() {
           lng: myLng,
           speed: speed
         });
+
+        fetch(SERVER_URL + '/api/locations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: currentUser, lat: myLat, lng: myLng, speed: speed })
+        }).catch(() => { });
       },
       (error) => {
         console.log("Web konum alınamadı:", error);
@@ -796,8 +814,6 @@ function openLocationModal() {
   if (map) {
     setTimeout(() => { map.invalidateSize(); }, 100);
   }
-
-  updateLiveDistance();
 }
 
 function closeLocationModal() {

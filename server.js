@@ -147,6 +147,21 @@ app.get('/api/locations', async(req, res) => {
   }
 });
 
+app.post('/api/locations', async(req, res) => {
+  try {
+    const updatedLocation = await Location.findOneAndUpdate(
+      { user: req.body.user },
+      { lat: req.body.lat, lng: req.body.lng, speed: req.body.speed },
+      { upsert: true, new: true }
+    );
+    io.emit('updatePartnerLocation', req.body);
+    res.status(201).json(updatedLocation);
+  } catch (error) {
+    console.log("Konum HHTP ile kaydedilemedi:", error);
+    res.status(500).json({ error: "Sunucu hatası" });
+  }
+});
+
 // Frontend dosyalarımızı dışarıya açıyoruz
 app.use(express.static(path.join(__dirname, 'public')));
 
