@@ -361,20 +361,23 @@ document.getElementById('add-day-form').addEventListener('submit', async functio
 async function loadMessages() {
   const chatBox = document.getElementById('chat-box');
   
-  // Yükleniyor Ekranı
-  chatBox.innerHTML = `
-  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-light); gap: 10px; opacity: 0.7; animation: popIn 0.3s ease-out;">
-      <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 28px; color: var(--primary);"></i>
-      <span style="font-size: 13px; font-weight: 500;">Geçmiş anılar getiriliyor...</span>
-    </div>
-  `;
+  // 1. DÜZELTME: Yükleniyor ekranını SADECE sohbet kutusu ilk açılışta boşsa göster. 
+  // Yeni mesaj atarken ekranın silinmesini ve titremesini engeller.
+  if (chatBox.innerHTML.trim() === '') {
+    chatBox.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-light); gap: 10px; opacity: 0.7; animation: popIn 0.3s ease-out;">
+        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 28px; color: var(--primary);"></i>
+        <span style="font-size: 13px; font-weight: 500;">Geçmiş anılar getiriliyor...</span>
+      </div>
+    `;
+  }
 
   try {
     const response = await fetch(SERVER_URL + '/api/messages');
     const messages = await response.json();
 
-    chatBox.innerHTML = '';
-
+    // 2. DÜZELTME: Mesajları hemen ekrana basmak yerine önce bu hafıza değişkeninde biriktiriyoruz.
+    let yeniHTML = ''; 
     let lastDateString = "";
     const todayString = new Date().toLocaleDateString('tr-TR');
 
@@ -382,13 +385,11 @@ async function loadMessages() {
       const isSentByMe = msg.sender === currentUser;
       const bubbleClass = isSentByMe ? 'sent' : 'received';
       
-      // Emojiler yerine fotoğraf URL'lerini eşleştiriyoruz
       const avatarUrl = msg.sender === 'alpturk' ? photoAlpturk : photoElif;
 
       let timeString = "";
       let msgDateString = "";
 
-      // Hata önleyici: Eğer veritabanından gelen mesajın tarihi boşsa sistem çökmesin
       if (msg.timestamp) {
           const dateObj = new Date(msg.timestamp);
           timeString = dateObj.getHours().toString().padStart(2, '0') + ':' +
@@ -399,22 +400,18 @@ async function loadMessages() {
       if (msgDateString !== "" && msgDateString !== lastDateString) {
         const displayDate = (msgDateString === todayString) ? "Bugün" : msgDateString;
 
-        const dividerHTML = `
+        yeniHTML += `
         <div style="text-align:center; margin: 15px auto; font-size: 11px; color: var(--text-light); background: rgba(0,0,0,0.04); padding: 4px 14px; border-radius: 12px; width: max-content; font-weight: 600;">
           ${displayDate}
         </div>
         `;
-        chatBox.innerHTML += dividerHTML;
         lastDateString = msgDateString;
       }
 
       const tickHTML = isSentByMe ? `<i class="fa-solid fa-check msg-tick"></i>` : '';
-
-      // Profil fotoğrafları için yuvarlak ve şık HTML şablonu
       const photoHTML = `<img src="${avatarUrl}" alt="Profile" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid ${isSentByMe ? 'var(--primary)' : '#e0e0e0'}; flex-shrink: 0;">`;
 
-      // Mesaj kutusu esnek yapı (flex) ile fotoğrafları yan yana dizecek şekilde güncellendi
-      const messageHTML = `
+      yeniHTML += `
       <div class="message-bubble ${bubbleClass}" style="animation: popIn 0.3s ease-out; display: flex; align-items: flex-end; gap: 8px;">
         ${!isSentByMe ? photoHTML : ''}
         <div class="msg-content">
@@ -427,13 +424,16 @@ async function loadMessages() {
         ${isSentByMe ? photoHTML : ''}
       </div>
       `;
-
-      chatBox.innerHTML += messageHTML;
     });
 
+    // 3. DÜZELTME: Tüm mesajlar hazır olduktan sonra tek bir hamlede HTML'e yazdırıyoruz.
+    chatBox.innerHTML = yeniHTML;
+
+    // 4. Kaydırma çubuğunu en aşağı sabitleme (Artık ekran silinmediği için kusursuz çalışacak)
     setTimeout(() => {
       chatBox.scrollTop = chatBox.scrollHeight;
-    }, 100);
+    }, 50);
+
   } catch (error) {
     console.log("Mesajlar yüklenemedi:", error);
     chatBox.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-light);">Bağlantı hatası veya kod dizilimi hatası oluştu.</div>`;
