@@ -92,7 +92,7 @@
           <div class="wall-section left-wall">
             <!-- Çift Tablosu (Özel Günler) -->
             <div class="frame calendar-frame"
-              onclick="switchTab('calendar', document.querySelectorAll('.nav-item')[1])">
+              onclick="switchTab('calendar')">
               <div class="cal-bind"></div>
               <div class="cal-grid">
                 <div class="dark-box"></div>
@@ -123,7 +123,7 @@
               <div class="shelf">
                 <!-- Telsize Tıklama Özelliği (Notlar Sayfasını Açar) -->
                 <div class="walkie-talkie-container"
-                  onclick="switchTab('notes', document.querySelectorAll('.nav-item')[2])">
+                  onclick="switchTab('notes')">
                   <div class="antenna"></div>
                   <div class="wt-body">
                     <div class="wt-screen"></div>
@@ -338,25 +338,6 @@
         <button class="pet-btn"><i class="fa-solid fa-shirt"></i> Giydir</button>
       </div>
     </div>
-
-
-    <!-- ALT MENÜ -->
-
-    <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchTab('home', this)">
-        <i class="fa-solid fa-house"></i>
-        <span>Ana Sayfa</span>
-      </div>
-      <div class="nav-item" onclick="switchTab('calendar', this)">
-        <i class="fa-solid fa-calendar-days"></i>
-        <span>Takvim</span>
-      </div>
-      <div class="nav-item" onclick="switchTab('notes', this)">
-        <i class="fa-solid fa-comment"></i>
-        <span>Notlar</span>
-      </div>
-    </div>
-
 
     <div id="add-modal" class="modal-overlay" style="display: none;">
       <div class="modal-box">

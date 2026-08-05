@@ -32,11 +32,6 @@ body.dark-mode .btn-small {
   box-shadow: none;
 }
 
-/* 5. Alt Menü parlaklığını kısıyoruz */
-body.dark-mode .bottom-nav {
-  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
-}
-
 /* Bilgisayarda dış arkaplanın da kararması için */
 body.dark-mode {
   background-color: #0a0a10;

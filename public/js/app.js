@@ -33,7 +33,7 @@ const homeIcon = L.divIcon({
 
 let lampStates = {
   elif: { mood: 'duygusal', color: '#d28fb0' },
-  alpturk: { mood: 'mutlu', color: '#e5cd85'}
+  alpturk: { mood: 'mutlu', color: '#e5cd85' }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -97,7 +97,7 @@ async function loadLamps() {
     data.forEach(lamp => {
       lampStates[lamp.user] = { mood: lamp.mood, color: lamp.color };
       const lampElement = document.getElementById(lamp.user + '-lamp');
-      if(lampElement) {
+      if (lampElement) {
         applyMoodToElement(lampElement, lamp.color);
       }
     });
@@ -137,11 +137,6 @@ function applyMoodToElement(element, color) {
 }
 
 function switchTab(tabName, element) {
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(item => item.classList.remove('active'));
-
-  element.classList.add('active');
-
   const pages = document.querySelectorAll('.content');
   pages.forEach(page => page.style.display = 'none');
 
@@ -151,7 +146,6 @@ function switchTab(tabName, element) {
     document.getElementById('calendar-page').style.display = 'block';
   } else if (tabName === 'notes') {
     document.getElementById('notes-page').style.display = 'flex';
-
     const chatBox = document.getElementById('chat-box');
     if (chatBox) {
       chatBox.scrollTop = chatBox.scrollHeight;
@@ -661,7 +655,7 @@ async function loadLocations() {
     const data = await response.json();
 
     data.forEach(loc => {
-      if(loc.user !== currentUser) {
+      if (loc.user !== currentUser) {
         partnerLocation.lat = loc.lat;
         partnerLocation.lng = loc.lng;
         partnerLocation.speed = loc.speed || "0.0";
@@ -810,7 +804,7 @@ socket.on('updatePartnerLocation', (data) => {
     partnerMarker.setIcon(createProfileIcon(partnerPhoto, data.speed));
   }
 
-  if(myMarker) {
+  if (myMarker) {
     const myCurrentPos = myMarker.getLatLng();
     const newDistance = calculateDistance(myCurrentPos.lat, myCurrentPos.lng, data.lat, data.lng);
     const headerVal = document.getElementById('header-distance-val');
