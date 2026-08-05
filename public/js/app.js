@@ -46,6 +46,52 @@ let lampStates = {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  // --- PUSH BİLDİRİMLERİ KURULUMU ---
+  function initPushNotifications() {
+    if (!window.Capacitor) return; // Sadece telefonda çalışır
+
+    const PushNotifications = window.Capacitor.Plugins.PushNotifications;
+    if (!PushNotifications) return;
+
+    // İzin iste
+    PushNotifications.requestPermissions().then(result => {
+      if (result.receive === 'granted') {
+        // Bildirim kanalına kayıt ol
+        PushNotifications.register();
+      } else {
+        console.log("Kullanıcı bildirim izni vermedi.");
+      }
+    });
+
+    // Token başarıyla alındığında
+    PushNotifications.addListener('registration', (token) => {
+      console.log('FCM Token alındı: ', token.value);
+
+      // Bu token'ı sunucuya kaydedelim (Hangi kullanıcının hangi telefonu var?)
+      registerDeviceToken(currentUser, token.value);
+    });
+
+    // Uygulama arka plandayken bildirime tıklandığında
+    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+      console.log('Bildirime tıklandı: ', notification);
+      // İsteğe bağlı: Bildirime tıklandığında direkt mesajlar sayfasına yönlendirebilirsin
+      switchTab('notes');
+    });
+  }
+
+  // Token'ı sunucuya gönderen fonksiyon
+  async function registerDeviceToken(user, token) {
+    try {
+      await fetch(SERVER_URL + '/api/save-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: user, token: token })
+      });
+    } catch (e) {
+      console.log("Token kaydedilemedi:", e);
+    }
+  }
+
   if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
     updateThemeIcon(true);
@@ -62,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadMessages();
     loadLamps();
     loadLocations();
+    initPushNotifications();
 
     applyMoodToElement(document.getElementById('elif-lamp'), lampStates.elif.color);
     applyMoodToElement(document.getElementById('alpturk-lamp'), lampStates.alpturk.color);
@@ -360,7 +407,7 @@ document.getElementById('add-day-form').addEventListener('submit', async functio
 
 async function loadMessages() {
   const chatBox = document.getElementById('chat-box');
-  
+
   // 1. DÜZELTME: Yükleniyor ekranını SADECE sohbet kutusu ilk açılışta boşsa göster. 
   // Yeni mesaj atarken ekranın silinmesini ve titremesini engeller.
   if (chatBox.innerHTML.trim() === '') {
@@ -377,24 +424,24 @@ async function loadMessages() {
     const messages = await response.json();
 
     // 2. DÜZELTME: Mesajları hemen ekrana basmak yerine önce bu hafıza değişkeninde biriktiriyoruz.
-    let yeniHTML = ''; 
+    let yeniHTML = '';
     let lastDateString = "";
     const todayString = new Date().toLocaleDateString('tr-TR');
 
     messages.forEach(msg => {
       const isSentByMe = msg.sender === currentUser;
       const bubbleClass = isSentByMe ? 'sent' : 'received';
-      
+
       const avatarUrl = msg.sender === 'alpturk' ? photoAlpturk : photoElif;
 
       let timeString = "";
       let msgDateString = "";
 
       if (msg.timestamp) {
-          const dateObj = new Date(msg.timestamp);
-          timeString = dateObj.getHours().toString().padStart(2, '0') + ':' +
-            dateObj.getMinutes().toString().padStart(2, '0');
-          msgDateString = dateObj.toLocaleDateString('tr-TR');
+        const dateObj = new Date(msg.timestamp);
+        timeString = dateObj.getHours().toString().padStart(2, '0') + ':' +
+          dateObj.getMinutes().toString().padStart(2, '0');
+        msgDateString = dateObj.toLocaleDateString('tr-TR');
       }
 
       if (msgDateString !== "" && msgDateString !== lastDateString) {

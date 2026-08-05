@@ -8,6 +8,13 @@ const mongoose = require('mongoose'); // Veritabanı yöneticimiz
 const { Server } = require('socket.io');
 const cors = require('cors');
 
+const admin = require("firebase-admin");
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -20,9 +27,9 @@ app.use(cors());
 // --- DEDEKTİF KODLARI ---
 console.log("🔍 Veritabanı linki kontrol ediliyor...");
 if (process.env.MONGODB_URI) {
-    console.log("✅ Link bulundu! Bağlantı deneniyor...");
+  console.log("✅ Link bulundu! Bağlantı deneniyor...");
 } else {
-    console.log("❌ HATA: .env dosyası içindeki MONGODB_URI okunamadı!");
+  console.log("❌ HATA: .env dosyası içindeki MONGODB_URI okunamadı!");
 }
 
 // Ekstra Dedektif: Mongoose'un her adımını izleyelim
@@ -31,8 +38,26 @@ mongoose.connection.on('error', (err) => console.log('❌ Mongoose arka plan hat
 
 // MongoDB Veritabanına Bağlanma İşlemi (5 saniye süre sınırı ekledik)
 mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
-    .then(() => console.log('✅ MongoDB Veritabanına Başarıyla Bağlanıldı!'))
-    .catch((err) => console.log('❌ MongoDB Bağlantı Hatası:', err.message));
+  .then(() => console.log('✅ MongoDB Veritabanına Başarıyla Bağlanıldı!'))
+  .catch((err) => console.log('❌ MongoDB Bağlantı Hatası:', err.message));
+
+
+
+// Kullanıcıların bildirim token'larını tutacağımız yer
+let userTokens = {
+  alpturk: null,
+  elif: null
+};
+
+// Telefon açıldığında token'ı buraya kaydeder
+app.post('/api/save-token', (req, res) => {
+  const { user, token } = req.body;
+  if (user && token) {
+    userTokens[user] = token;
+    console.log(`${user} için FCM Token kaydedildi.`);
+  }
+  res.status(200).send({ success: true });
+});
 
 // --- API ROTALARI ---
 const Message = require('./models/Message')
@@ -55,8 +80,28 @@ app.post('/api/messages', async (req, res) => {
     });
 
     await yeniMesaj.save();
-
     res.status(201).json(yeniMesaj);
+    // Mesaj gönderildiğinde karşı tarafa anlık bildirim fırlatma
+    const receiver = req.body.sender === 'alpturk' ? 'elif' : 'alpturk';
+    const receiverToken = userTokens[receiver];
+
+    if (receiverToken) {
+      const messagePayload = {
+        token: receiverToken,
+        notification: {
+          title: req.body.sender === 'alpturk' ? 'Alptürk 🧑🏻' : 'Elif 👩🏻',
+          body: req.body.text
+        }
+      };
+
+      admin.messaging().send(messagePayload)
+        .then((response) => {
+          console.log('Bildirim başarıyla gönderildi:', response);
+        })
+        .catch((error) => {
+          console.log('Bildirim gönderme hatası:', error);
+        });
+    }
   } catch (error) {
     console.log("Mesaj kaydedilemedi:", error);
     res.status(500).json({ error: "Mesaj kaydedilirken sunucu hatası oluştu." });
@@ -71,11 +116,11 @@ app.get('/api/special-days', async (req, res) => {
     res.json(specialDays);
   } catch (error) {
     console.log("Özel Günler okunamadı:", error);
-    res.status(500).json({ error: "Özel Günler okunurken sunucu hatası oluştu."});
+    res.status(500).json({ error: "Özel Günler okunurken sunucu hatası oluştu." });
   }
 });
 
-app.post('/api/special-days', async(req, res) => {
+app.post('/api/special-days', async (req, res) => {
   try {
     const yeniSpecialDays = new SpecialDay({
       title: req.body.title,
@@ -96,18 +141,18 @@ app.post('/api/special-days', async(req, res) => {
 
 const Period = require('./models/Period');
 
-app.get('/api/period', async(req, res) => {
+app.get('/api/period', async (req, res) => {
   try {
     const period = await Period.findOne().sort({ lastStartDate: -1 });
     res.json(period);
 
   } catch (error) {
     console.log("Period okunamadı:", error);
-    res.status(500).json({ error: "Period okunurken sunucu hatası oluştu."});
+    res.status(500).json({ error: "Period okunurken sunucu hatası oluştu." });
   }
 });
 
-app.post('/api/period', async(req, res) => {
+app.post('/api/period', async (req, res) => {
   try {
     const yeniPeriod = new Period({
       lastStartDate: req.body.lastStartDate,
@@ -137,7 +182,7 @@ app.get('/api/lamps', async (req, res) => {
 
 const Location = require('./models/Location');
 
-app.get('/api/locations', async(req, res) => {
+app.get('/api/locations', async (req, res) => {
   try {
     const locations = await Location.find();
     res.json(locations);
@@ -147,7 +192,7 @@ app.get('/api/locations', async(req, res) => {
   }
 });
 
-app.post('/api/locations', async(req, res) => {
+app.post('/api/locations', async (req, res) => {
   try {
     const updatedLocation = await Location.findOneAndUpdate(
       { user: req.body.user },
@@ -166,7 +211,7 @@ app.post('/api/locations', async(req, res) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // --- SOCKET.IO ---
@@ -191,7 +236,7 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('refreshMessages');
   });
 
-  socket.on('changeLamp', async(data) => {
+  socket.on('changeLamp', async (data) => {
     try {
       await Lamp.findOneAndUpdate(
         { user: data.user },
@@ -212,5 +257,5 @@ io.on('connection', (socket) => {
 
 // Sunucuyu başlat
 server.listen(PORT, () => {
-    console.log(`🚀 Sunucu başarıyla başlatıldı! http://localhost:${PORT}`);
+  console.log(`🚀 Sunucu başarıyla başlatıldı! http://localhost:${PORT}`);
 });

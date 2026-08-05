@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "29234405229",
+    "project_id": "bizim-dunyamiz-9194f",
+    "storage_bucket": "bizim-dunyamiz-9194f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:29234405229:android:3952bb465529a2b5fb4464",
+        "android_client_info": {
+          "package_name": "com.alpturk.bizimdunyamiz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_oQfPe4I4YlWKaHQ7OyETLHhjglo8F6g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
