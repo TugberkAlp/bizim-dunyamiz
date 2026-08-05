@@ -2,6 +2,9 @@
 
 const SERVER_URL = "https://bizim-dunyamiz.onrender.com";
 
+// Capacitor global objesinden eklentiyi alıyoruz (sadece telefondayken çalışır)
+const BackgroundGeolocation = window.Capacitor ? window.Capacitor.Plugins.BackgroundGeolocation : null;
+
 const socket = io(SERVER_URL);
 let currentUser = localStorage.getItem('user');
 
@@ -880,7 +883,3 @@ socket.on('updateLampColor', (data) => {
   const lampElement = document.getElementById(data.user + '-lamp');
   if (lampElement) applyMoodToElement(lampElement, data.color);
 });
-
-// Capacitor Background Geolocation Eklentisini Çağırıyoruz
-const { registerPlugin } = capacitorExports;
-const BackgroundGeolocation = registerPlugin('BackgroundGeolocation');
