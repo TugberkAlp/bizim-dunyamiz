@@ -719,6 +719,27 @@ function updateLiveDistance() {
   }
 }
 
+// Haritayı sayfa yüklendiğinde veya ilk ihtiyaç duyulduğunda hazırlamak için boş bir fonksiyon
+function initMapIfNeeded() {
+  if (!map) {
+    map = L.map('map').setView([40.7434, 30.0168], 13); // Varsayılan merkez (İzmit civarı)
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Evleri Ekle
+    L.marker(alpturkHomeCoords, { icon: homeIcon }).bindPopup("Alptürk'ün Evi 🏠").addTo(map);
+    L.marker(elifHomeCoords, { icon: homeIcon }).bindPopup("Elif'e Evi 🏠").addTo(map);
+
+    // Pinleri Başlangıç Konumlarıyla (veya partner verisiyle) Yerleştir
+    myMarker = L.marker([40.7434, 30.0168], { icon: createProfileIcon(myPhoto, "0.0") }).addTo(map);
+    partnerMarker = L.marker([partnerLocation.lat || 40.7177, partnerLocation.lng || 29.7979], {
+      icon: createProfileIcon(partnerPhoto, partnerLocation.speed)
+    }).addTo(map);
+  }
+}
+
 async function loadLocations() {
   try {
     const response = await fetch(SERVER_URL + '/api/locations');
@@ -729,6 +750,11 @@ async function loadLocations() {
         partnerLocation.lat = loc.lat;
         partnerLocation.lng = loc.lng;
         partnerLocation.speed = loc.speed || "0.0";
+
+        if (partnerMarker) {
+          partnerMarker.setLatLng([loc.lat, loc.lng]);
+          partnerMarker.setIcon(createProfileIcon(partnerPhoto, loc.speed));
+        }
       }
     });
   } catch (error) {
@@ -811,9 +837,16 @@ function openLocationModal() {
   const modal = document.getElementById('location-modal');
   modal.style.display = 'flex';
 
-  if (map) {
-    setTimeout(() => { map.invalidateSize(); }, 100);
-  }
+  initMapIfNeeded();
+  setTimeout(() => {
+    map.invalidateSize();
+
+    // Eğer geçerli konumlarımız varsa haritayı ikisini kapsayacak şekilde odakla
+    if (myMarker && partnerMarker) {
+      const group = new L.featureGroup([myMarker, partnerMarker]);
+      map.fitBounds(group.getBounds().pad(0.3));
+    }
+  }, 200);
 }
 
 function closeLocationModal() {
