@@ -34,7 +34,7 @@ public class TrackerService extends Service implements SensorEventListener {
     private Sensor accelerometer;
     private long lastShakeTime = 0;
 
-    private final String CURRENT_USER = "alpturk"; // Elif için "elif" yapılacak
+    private final String CURRENT_USER = "elif"; // Elif için "elif" yapılacak
 
     @Override
     public void onCreate() {
