@@ -627,7 +627,7 @@ function updateLiveDistance() {
   const headerVal = document.getElementById('header-distance-val');
 
   // 1. Eğer telefondaysak (Capacitor ortamı aktifse) arka plan takibini çalıştır
-  
+
 }
 
 async function loadLocations() {
@@ -637,22 +637,34 @@ async function loadLocations() {
 
     data.forEach(loc => {
       if (loc.user !== currentUser) {
+        // PARTNERİN KONUMU
         partnerLocation.lat = loc.lat;
         partnerLocation.lng = loc.lng;
         partnerLocation.speed = loc.speed || "0.0";
 
-        // Harita açıksa partnerin pinini anında yerine koy
         if (map && partnerMarker) {
           partnerMarker.setLatLng([loc.lat, loc.lng]);
           partnerMarker.setIcon(createProfileIcon(partnerPhoto, loc.speed));
         }
+      } else {
+        // KENDİ KONUMUMUZ (Java servisinin veritabanına yazdığı gerçek konum)
+        myLastLat = loc.lat;
+        myLastLng = loc.lng;
 
-        // Veritabanından gelen gerçek konumla mesafeyi HEMEN yeniden hesapla (0,0 hatasını önler)
-        const distance = calculateDistance(myLastLat, myLastLng, loc.lat, loc.lng);
-        const headerVal = document.getElementById('header-distance-val');
-        if (headerVal) headerVal.innerText = distance.toFixed(1);
+        if (map && myMarker) {
+          myMarker.setLatLng([loc.lat, loc.lng]);
+          myMarker.setIcon(createProfileIcon(myPhoto, loc.speed || "0.0"));
+        }
       }
     });
+
+    // Mesafeyi hesapla
+    if (partnerLocation.lat !== 0) {
+      const distance = calculateDistance(myLastLat, myLastLng, partnerLocation.lat, partnerLocation.lng);
+      const headerVal = document.getElementById('header-distance-val');
+      if (headerVal) headerVal.innerText = distance.toFixed(1);
+    }
+
   } catch (error) {
     console.log("Konumlar yüklenemedi:", error);
   }
@@ -737,8 +749,8 @@ function openLocationModal() {
   if (!map) {
     updateMap(myLastLat, myLastLng, "0.0");
   } else {
-    setTimeout(() => { 
-      map.invalidateSize(); 
+    setTimeout(() => {
+      map.invalidateSize();
       if (myMarker && partnerMarker) {
         const group = new L.featureGroup([myMarker, partnerMarker]);
         map.fitBounds(group.getBounds().pad(0.3));
@@ -793,7 +805,17 @@ function createProfileIcon(photoUrl, speed) {
 
 socket.on('updatePartnerLocation', (data) => {
   
-  if(data.user === currentUser) return;
+  if (data.user === currentUser) {
+    myLastLat = data.lat;
+    myLastLng = data.lng;
+
+    if (map && myMarker) {
+      myMarker.setLatLng([data.lat, data.lng]);
+      myMarker.setIcon(createProfileIcon(myPhoto, data.speed || "0.0"));
+    }
+    return; // Kendi pinimizi güncelledik, partner kodlarına geçmeden durdur.
+  }
+  // 2. EĞER GELEN VERİ PARTNERİNSE
   console.log("Bebeğinden yeni konum geldi!", data);
 
   partnerLocation.lat = data.lat;
@@ -806,8 +828,7 @@ socket.on('updatePartnerLocation', (data) => {
   }
 
   if (myMarker) {
-    const myCurrentPos = myMarker.getLatLng();
-    const newDistance = calculateDistance(myCurrentPos.lat, myCurrentPos.lng, data.lat, data.lng);
+    const newDistance = calculateDistance(myLastLat, myLastLng, data.lat, data.lng);
     const headerVal = document.getElementById('header-distance-val');
     if (headerVal) headerVal.innerText = newDistance.toFixed(1);
   }

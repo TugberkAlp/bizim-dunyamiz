@@ -27,7 +27,7 @@ public class TrackerService extends Service {
     private LocationCallback locationCallback;
 
     // DİKKAT: APK'yı kimin için alıyorsan onu yaz! Kendi telefonun için "alpturk", Elif için "elif" yapacaksın.
-    private final String CURRENT_USER = "alpturk";
+    private final String CURRENT_USER = "elif";
 
     @Override
     public void onCreate() {
