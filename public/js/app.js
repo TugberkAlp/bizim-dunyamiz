@@ -28,22 +28,10 @@ const homeIcon = L.divIcon({
   iconAnchor: [16, 16]
 });
 
-let savedStates = localStorage.getItem('lampStates');
-let lampStates = savedStates ? JSON.parse(savedStates) : {
+let lampStates = {
   elif: { mood: 'duygusal', color: '#d28fb0' },
-  alpturk: { mood: 'mutlu', color: '#e5cd85' }
+  alpturk: { mood: 'mutlu', color: '#e5cd85'}
 };
-
-try {
-  const savedStates = localStorage.getItem('lampStates');
-  if (savedStates) {
-    lampStates = JSON.parse(savedStates);
-  }
-} catch (e) {
-  console.error("LocalStorage bozuk, varsayılan değerlere dönüldü.");
-  localStorage.removeItem('lampStates');
-}
-
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -62,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateLiveDistance();
     setInterval(updateLiveDistance, 30000);
     loadMessages();
+    loadLamps();
 
     applyMoodToElement(document.getElementById('elif-lamp'), lampStates.elif.color);
     applyMoodToElement(document.getElementById('alpturk-lamp'), lampStates.alpturk.color);
@@ -97,6 +86,23 @@ function selectMood(element, mood) {
   }
 }
 
+async function loadLamps() {
+  try {
+    const response = await fetch('/api/lamps');
+    const data = await response.json();
+
+    data.forEach(lamp => {
+      lampStates[lamp.user] = { mood: lamp.mood, color: lamp.color };
+      const lampElement = document.getElementById(lamp.user + '-lamp');
+      if(lampElement) {
+        applyMoodToElement(lampElement, lamp.color);
+      }
+    });
+  } catch (error) {
+    console.log("Lambalar yüklenemedi:", error);
+  }
+}
+
 function closeMoodModal() {
   document.getElementById('mood-modal').style.display = 'none';
 }
@@ -109,13 +115,13 @@ function applyMood(mood, color) {
 
     // 1. Durumu hafızaya kaydet
     lampStates[owner] = { mood: mood, color: color };
-    localStorage.setItem('lampStates', JSON.stringify(lampStates));
+    applyMoodToElement(currentLampElement, color);
 
-    // 2. Görünümü güncelle
-    const lamp = currentLampElement.querySelector('.lamp');
-    const beam = currentLampElement.querySelector('.beam');
-    lamp.style.backgroundColor = color;
-    beam.style.background = `linear-gradient(to bottom, ${color}40 0%, transparent 100%)`;
+    socket.emit('changeLamp', {
+      user: owner,
+      mood: mood,
+      color: color
+    });
   }
   closeMoodModal();
 }
@@ -796,3 +802,9 @@ socket.on('updatePartnerLocation', (data) => {
 socket.on('refreshMessages', () => {
   loadMessages();
 })
+
+socket.on('updateLampColor', (data) => {
+  lampStates[data.user] = { mood: data.mood, color: data.color };
+  const lampElement = document.getElementById(data.user + '-lamp');
+  if (lampElement) applyMoodToElement(lampElement, data.color);
+});

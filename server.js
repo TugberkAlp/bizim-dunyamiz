@@ -121,6 +121,18 @@ app.post('/api/period', async(req, res) => {
   }
 });
 
+const Lamp = require('./models/Lamp');
+
+app.get('/api/lamps', async (req, res) => {
+  try {
+    const lamps = await Lamp.find();
+    res.json(lamps);
+  } catch (error) {
+    console.log("Lambalar okunamadı:", error);
+    res.status(500).json({ error: "Sunucu hatası" });
+  }
+});
+
 // Frontend dosyalarımızı dışarıya açıyoruz
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -138,6 +150,20 @@ io.on('connection', (socket) => {
 
   socket.on('chatMessageSent', () => {
     socket.broadcast.emit('refreshMessages');
+  });
+
+  socket.on('changeLamp', async(data) => {
+    try {
+      await Lamp.findOneAndUpdate(
+        { user: data.user },
+        { mood: data.mood, color: data.color },
+        { upsert: true, new: true }
+      );
+
+      socket.broadcast.emit('updateLampColor', data);
+    } catch (err) {
+      console.log("Lamba güncellenirken hata:", err);
+    }
   });
 
   socket.on('disconnect', () => {
