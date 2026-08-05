@@ -46,52 +46,6 @@ let lampStates = {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // --- PUSH BİLDİRİMLERİ KURULUMU ---
-  function initPushNotifications() {
-    if (!window.Capacitor) return; // Sadece telefonda çalışır
-
-    const PushNotifications = window.Capacitor.Plugins.PushNotifications;
-    if (!PushNotifications) return;
-
-    // İzin iste
-    PushNotifications.requestPermissions().then(result => {
-      if (result.receive === 'granted') {
-        // Bildirim kanalına kayıt ol
-        PushNotifications.register();
-      } else {
-        console.log("Kullanıcı bildirim izni vermedi.");
-      }
-    });
-
-    // Token başarıyla alındığında
-    PushNotifications.addListener('registration', (token) => {
-      console.log('FCM Token alındı: ', token.value);
-
-      // Bu token'ı sunucuya kaydedelim (Hangi kullanıcının hangi telefonu var?)
-      registerDeviceToken(currentUser, token.value);
-    });
-
-    // Uygulama arka plandayken bildirime tıklandığında
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-      console.log('Bildirime tıklandı: ', notification);
-      // İsteğe bağlı: Bildirime tıklandığında direkt mesajlar sayfasına yönlendirebilirsin
-      switchTab('notes');
-    });
-  }
-
-  // Token'ı sunucuya gönderen fonksiyon
-  async function registerDeviceToken(user, token) {
-    try {
-      await fetch(SERVER_URL + '/api/save-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: user, token: token })
-      });
-    } catch (e) {
-      console.log("Token kaydedilemedi:", e);
-    }
-  }
-
   if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
     updateThemeIcon(true);
@@ -114,6 +68,52 @@ document.addEventListener("DOMContentLoaded", () => {
     applyMoodToElement(document.getElementById('alpturk-lamp'), lampStates.alpturk.color);
   }
 });
+
+// --- PUSH BİLDİRİMLERİ KURULUMU ---
+function initPushNotifications() {
+  if (!window.Capacitor) return; // Sadece telefonda çalışır
+
+  const PushNotifications = window.Capacitor.Plugins.PushNotifications;
+  if (!PushNotifications) return;
+
+  // İzin iste
+  PushNotifications.requestPermissions().then(result => {
+    if (result.receive === 'granted') {
+      // Bildirim kanalına kayıt ol
+      PushNotifications.register();
+    } else {
+      console.log("Kullanıcı bildirim izni vermedi.");
+    }
+  });
+
+  // Token başarıyla alındığında
+  PushNotifications.addListener('registration', (token) => {
+    console.log('FCM Token alındı: ', token.value);
+
+    // Bu token'ı sunucuya kaydedelim (Hangi kullanıcının hangi telefonu var?)
+    registerDeviceToken(currentUser, token.value);
+  });
+
+  // Uygulama arka plandayken bildirime tıklandığında
+  PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+    console.log('Bildirime tıklandı: ', notification);
+    // İsteğe bağlı: Bildirime tıklandığında direkt mesajlar sayfasına yönlendirebilirsin
+    switchTab('notes');
+  });
+}
+
+// Token'ı sunucuya gönderen fonksiyon
+async function registerDeviceToken(user, token) {
+  try {
+    await fetch(SERVER_URL + '/api/save-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: user, token: token })
+    });
+  } catch (e) {
+    console.log("Token kaydedilemedi:", e);
+  }
+}
 
 const messageInput = document.getElementById('message-input');
 
