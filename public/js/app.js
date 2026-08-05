@@ -887,10 +887,13 @@ function createProfileIcon(photoUrl, speed) {
 }
 
 socket.on('updatePartnerLocation', (data) => {
+  
+  if(data.user === currentUser) return;
   console.log("Bebeğinden yeni konum geldi!", data);
 
   partnerLocation.lat = data.lat;
   partnerLocation.lng = data.lng;
+  partnerLocation.speed = data.speed || "0.0";
 
   if (map && partnerMarker) {
     partnerMarker.setLatLng([data.lat, data.lng]);
