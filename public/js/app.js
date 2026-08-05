@@ -729,6 +729,20 @@ async function loadLocations() {
         partnerLocation.lat = loc.lat;
         partnerLocation.lng = loc.lng;
         partnerLocation.speed = loc.speed || "0.0";
+
+        // 1. Eğer harita açıksa partnerin pinini hemen gerçek konumuna taşı
+        if (map && partnerMarker) {
+          partnerMarker.setLatLng([loc.lat, loc.lng]);
+          partnerMarker.setIcon(createProfileIcon(partnerPhoto, loc.speed));
+        }
+
+        // 2. Header'daki mesafeyi 0,0 varsayımıyla değil, gelen GERÇEK konumla hemen yeniden hesapla
+        if (myMarker) {
+          const myPos = myMarker.getLatLng();
+          const distance = calculateDistance(myPos.lat, myPos.lng, loc.lat, loc.lng);
+          const headerVal = document.getElementById('header-distance-val');
+          if (headerVal) headerVal.innerText = distance.toFixed(1);
+        }
       }
     });
   } catch (error) {
