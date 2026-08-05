@@ -133,6 +133,18 @@ app.get('/api/lamps', async (req, res) => {
   }
 });
 
+const Location = require('./models/Location');
+
+app.get('/api/locations', async(req, res) => {
+  try {
+    const locations = await Location.find();
+    res.json(locations);
+  } catch (error) {
+    console.log("Konum alınamadı:", error);
+    res.status(500).json({ error: "Sunucu hatası" });
+  }
+});
+
 // Frontend dosyalarımızı dışarıya açıyoruz
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -144,9 +156,19 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('Yeni bir cihaz bağlandı! Cihaz ID:', socket.id);
 
-  socket.on('sendLocation', (data) => {
-    socket.broadcast.emit('updatePartnerLocation', data);
-  })
+  socket.on('sendLocation', async (data) => {
+    try {
+      await Location.findOneAndUpdate(
+        { user: data.user },
+        { lat: data.lat, lng: data.lng, speed: data.speed },
+        { upsert: true, new: true }
+      );
+
+      socket.broadcast.emit('updatePartnerLocation', data);
+    } catch (error) {
+      console.log("Konum güncellenirken hata oluştu:", error);
+    }
+  });
 
   socket.on('chatMessageSent', () => {
     socket.broadcast.emit('refreshMessages');

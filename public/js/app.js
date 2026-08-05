@@ -9,14 +9,17 @@ let periodData = {
   cycleLength: 28
 };
 
-const elifLocation = { lat: 40.7731, lng: 29.9780 };
+let partnerLocation = { lat: 0, lng: 0 };
 // HARİTA DEĞİŞKENLERİ
 let map = null;
-let alpturkMarker = null;
-let elifMarker = null;
+let myMarker = null;
+let partnerMarker = null;
 
 const photoAlpturk = 'assets/images/alpturk.png';
 const photoElif = 'assets/images/elif.png';
+
+let myPhoto = currentUser === 'alpturk' ? photoAlpturk : photoElif;
+let partnerPhoto = currentUser === 'alpturk' ? photoElif : photoAlpturk;
 
 const alpturkHomeCoords = [40.7434, 30.0168];
 const elifHomeCoords = [40.7177, 29.7979];
@@ -48,9 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSpecialDays();
     loadPeriodData();
     updateLiveDistance();
-    setInterval(updateLiveDistance, 30000);
     loadMessages();
     loadLamps();
+    loadLocations();
 
     applyMoodToElement(document.getElementById('elif-lamp'), lampStates.elif.color);
     applyMoodToElement(document.getElementById('alpturk-lamp'), lampStates.alpturk.color);
@@ -621,12 +624,12 @@ function updateLiveDistance() {
   const headerVal = document.getElementById('header-distance-val');
 
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.watchPosition(
       (position) => {
         const myLat = position.coords.latitude;
         const myLng = position.coords.longitude;
         const speed = position.coords.speed ? (position.coords.speed * 3.6).toFixed(1) : "0.0";
-        const distance = calculateDistance(myLat, myLng, elifLocation.lat, elifLocation.lng);
+        const distance = calculateDistance(myLat, myLng, partnerLocation.lat, partnerLocation.lng);
 
         if (headerVal) headerVal.innerText = distance.toFixed(1);
 
@@ -649,6 +652,22 @@ function updateLiveDistance() {
       },
       { enableHighAccuracy: true, maximumAge: 0 }
     );
+  }
+}
+
+async function loadLocations() {
+  try {
+    const response = await fetch('/api/locations');
+    const data = await response.json();
+
+    data.forEach(loc => {
+      if(loc.user !== currentUser) {
+        partnerLocation.lat = loc.lat;
+        partnerLocation.lng = loc.lng;
+      }
+    });
+  } catch (error) {
+    console.log("Konumlar yüklenemedi:", error);
   }
 }
 
@@ -754,15 +773,15 @@ function updateMap(myLat, myLng, speed) {
     L.marker(elifHomeCoords, { icon: homeIcon }).bindPopup("Elif'in Evi 🏠").addTo(map);
 
     // Bizim Canlı PİNLERİMİZİ Ekle (Fotoğraflı)
-    alpturkMarker = L.marker([myLat, myLng], { icon: createProfileIcon(photoAlpturk, speed) }).addTo(map);
+    myMarker = L.marker([myLat, myLng], { icon: createProfileIcon(myPhoto, speed) }).addTo(map);
     // Elif'in hızı şimdilik statik '0.0' (Sunucu kurulunca o da dinamik olacak)
-    elifMarker = L.marker([elifLocation.lat, elifLocation.lng], { icon: createProfileIcon(photoElif, "0.0") }).addTo(map);
+    partnerMarker = L.marker([partnerLocation.lat, partnerLocation.lng], { icon: createProfileIcon(partnerPhoto, "0.0") }).addTo(map);
   } else {
-    alpturkMarker.setLatLng([myLat, myLng]);
-    alpturkMarker.setIcon(createProfileIcon(photoAlpturk, speed));
+    myMarker.setLatLng([myLat, myLng]);
+    myMarker.setIcon(createProfileIcon(myPhoto, speed));
   }
 
-  const group = new L.featureGroup([alpturkMarker, elifMarker]);
+  const group = new L.featureGroup([myMarker, partnerMarker]);
   map.fitBounds(group.getBounds().pad(0.2));
 }
 
@@ -783,16 +802,16 @@ function createProfileIcon(photoUrl, speed) {
 socket.on('updatePartnerLocation', (data) => {
   console.log("Bebeğinden yeni konum geldi!", data);
 
-  elifLocation.lat = data.lat;
-  elifLocation.lng = data.lng;
+  partnerLocation.lat = data.lat;
+  partnerLocation.lng = data.lng;
 
-  if (map && elifMarker) {
-    elifMarker.setLatLng([data.lat, data.lng]);
-    elifMarker.setIcon(createProfileIcon(photoElif, data.speed));
+  if (map && partnerMarker) {
+    partnerMarker.setLatLng([data.lat, data.lng]);
+    partnerMarker.setIcon(createProfileIcon(partnerPhoto, data.speed));
   }
 
-  if(alpturkMarker) {
-    const myCurrentPos = alpturkMarker.getLatLng();
+  if(myMarker) {
+    const myCurrentPos = myMarker.getLatLng();
     const newDistance = calculateDistance(myCurrentPos.lat, myCurrentPos.lng, data.lat, data.lng);
     const headerVal = document.getElementById('header-distance-val');
     if (headerVal) headerVal.innerText = newDistance.toFixed(1);
@@ -808,3 +827,4 @@ socket.on('updateLampColor', (data) => {
   const lampElement = document.getElementById(data.user + '-lamp');
   if (lampElement) applyMoodToElement(lampElement, data.color);
 });
+
