@@ -565,7 +565,7 @@ function checkForMatch() {
 
     if (matchedPairs === memoryEmojis.length) {
       setTimeout(() => {
-        alert(`Tebrikler Bebeğim! Hata sayın ${mistakes}! 🎉`);
+        alert(`Tebrikler Bebeğim! Kusursuzsun. Hata sayın ${mistakes}! 🎉`);
       }, 500);
     }
   } else {
