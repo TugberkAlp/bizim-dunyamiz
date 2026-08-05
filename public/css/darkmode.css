@@ -132,3 +132,29 @@ body.dark-mode .live-distance-panel {
   color: #EAEAEA;
   background: rgba(100, 200, 192, 0.1);
 }
+
+/* Gündüz (Aydınlık) Modu İçin Pencere Ayarları */
+body:not(.dark-mode) .window-moon {
+  /* Ayı Güneşe Çeviriyoruz */
+  background: #FFD54F;
+  box-shadow: 0 0 20px #FFB300;
+}
+
+body:not(.dark-mode) .window-star {
+  /* Gündüzleri yıldızları gizle */
+  display: none;
+}
+
+body:not(.dark-mode) .room-window {
+  /* Gündüzleri gökyüzünü açık mavi yap */
+  background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+}
+
+body:not(.dark-mode) .window-mountain {
+  /* Dağları gündüz rengine (yeşilimsi/gri) çevir */
+  background: #7DA27E;
+}
+
+body:not(.dark-mode) .m2 {
+  background: #5E8B60;
+}
