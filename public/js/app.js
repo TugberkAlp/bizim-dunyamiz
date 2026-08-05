@@ -822,3 +822,11 @@ socket.on('updateLampColor', (data) => {
   if (lampElement) applyMoodToElement(lampElement, data.color);
 });
 
+// Service Worker Kaydı (PWA Kurulumu İçin)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('Service Worker Kayıtlı!'))
+      .catch(err => console.log('Service Worker Hatası:', err));
+  });
+}
