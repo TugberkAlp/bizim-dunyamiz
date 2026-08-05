@@ -192,7 +192,8 @@
     </div>
 
     <div class="content" id="calendar-page" style="display: none;">
-      <div class="game-header" style="margin-bottom: 20px;">
+      <div class="game-header"
+        style="margin-bottom: 20px; position: relative; display: flex; align-items: center; justify-content: space-between;">
         <button class="back-btn" onclick="switchTab('home')"><i class="fa-solid fa-chevron-left"></i></button>
         <h3>Takvim 📅</h3>
         <div style="width: 70px;"></div>
@@ -245,10 +246,11 @@
 
     <!-- NOTLAR SAYFASI -->
     <div class="content" id="notes-page" style="display: none;">
-      <div class="game-header" style="margin-bottom: 20px;">
+      <div class="game-header"
+        style="margin-bottom: 20px; position: relative; display: flex; align-items: center; justify-content: space-between;">
         <button class="back-btn" onclick="switchTab('home')"><i class="fa-solid fa-chevron-left"></i> Ev</button>
         <div style="text-align: center;">
-          <h3 style="color: var(--text-dark); font-size: 18px; margin: 0;">Dijital Post-it 📝</h3>
+          <h3 style="color: var(--text-dark); font-size: 18px; margin: 0;">Mesajlar 📝</h3>
           <p style="color: var(--text-light); font-size: 12px; margin-top: 3px;">Ona tatlı bir not bırak...</p>
         </div>
         <div style="width: 70px;"></div> <!-- Ortalamak için görünmez boşluk -->

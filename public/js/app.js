@@ -770,13 +770,13 @@ function updateMap(myLat, myLng, speed) {
     // Bizim Canlı PİNLERİMİZİ Ekle (Fotoğraflı)
     myMarker = L.marker([myLat, myLng], { icon: createProfileIcon(myPhoto, speed) }).addTo(map);
     partnerMarker = L.marker([partnerLocation.lat, partnerLocation.lng], { icon: createProfileIcon(partnerPhoto, partnerLocation.speed) }).addTo(map);
+
+    const group = new L.featureGroup([myMarker, partnerMarker]);
+    map.fitBounds(group.getBounds().pad(0.2));
   } else {
     myMarker.setLatLng([myLat, myLng]);
     myMarker.setIcon(createProfileIcon(myPhoto, speed));
   }
-
-  const group = new L.featureGroup([myMarker, partnerMarker]);
-  map.fitBounds(group.getBounds().pad(0.2));
 }
 
 function createProfileIcon(photoUrl, speed) {
