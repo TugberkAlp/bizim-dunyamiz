@@ -636,7 +636,7 @@ function updateLiveDistance() {
         stale: false,
         stopOnTerminate: false,
         startOnBoot: true,
-        distanceFilter: 10
+        distanceFilter: 0
       },
       (location, error) => {
         if (error) {
