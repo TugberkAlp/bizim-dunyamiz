@@ -1,7 +1,7 @@
 /* --- SANAL EV (VIRTUAL ROOM) TASARIMI --- */
 .virtual-room {
   position: flex;
-  min-height: calc(100vh - 400px);
+  min-height: calc(100vh - 450px);
   flex-direction: column;
   justify-content: space-between;
   width: 100%;
