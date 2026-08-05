@@ -360,6 +360,7 @@ document.getElementById('add-day-form').addEventListener('submit', async functio
 
 async function loadMessages() {
   const chatBox = document.getElementById('chat-box');
+  
   // Yükleniyor Ekranı
   chatBox.innerHTML = `
   <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-light); gap: 10px; opacity: 0.7; animation: popIn 0.3s ease-out;">
@@ -380,16 +381,22 @@ async function loadMessages() {
     messages.forEach(msg => {
       const isSentByMe = msg.sender === currentUser;
       const bubbleClass = isSentByMe ? 'sent' : 'received';
+      
       // Emojiler yerine fotoğraf URL'lerini eşleştiriyoruz
       const avatarUrl = msg.sender === 'alpturk' ? photoAlpturk : photoElif;
 
-      const dateObj = new Date(msg.timestamp);
-      const timeString = dateObj.getHours().toString().padStart(2, '0') + ':' +
-        dateObj.getMinutes().toString().padStart(2, '0');
+      let timeString = "";
+      let msgDateString = "";
 
-      const msgDateString = dateObj.toLocaleDateString('tr-TR');
+      // Hata önleyici: Eğer veritabanından gelen mesajın tarihi boşsa sistem çökmesin
+      if (msg.timestamp) {
+          const dateObj = new Date(msg.timestamp);
+          timeString = dateObj.getHours().toString().padStart(2, '0') + ':' +
+            dateObj.getMinutes().toString().padStart(2, '0');
+          msgDateString = dateObj.toLocaleDateString('tr-TR');
+      }
 
-      if (msgDateString !== lastDateString) {
+      if (msgDateString !== "" && msgDateString !== lastDateString) {
         const displayDate = (msgDateString === todayString) ? "Bugün" : msgDateString;
 
         const dividerHTML = `
@@ -403,11 +410,15 @@ async function loadMessages() {
 
       const tickHTML = isSentByMe ? `<i class="fa-solid fa-check msg-tick"></i>` : '';
 
+      // Profil fotoğrafları için yuvarlak ve şık HTML şablonu
+      const photoHTML = `<img src="${avatarUrl}" alt="Profile" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid ${isSentByMe ? 'var(--primary)' : '#e0e0e0'}; flex-shrink: 0;">`;
+
+      // Mesaj kutusu esnek yapı (flex) ile fotoğrafları yan yana dizecek şekilde güncellendi
       const messageHTML = `
       <div class="message-bubble ${bubbleClass}" style="animation: popIn 0.3s ease-out; display: flex; align-items: flex-end; gap: 8px;">
         ${!isSentByMe ? photoHTML : ''}
         <div class="msg-content">
-          <p>${msg.text}</p>
+          <p>${msg.text || ''}</p>
           <span class="msg-time">
             ${timeString}
             ${tickHTML}
@@ -421,6 +432,7 @@ async function loadMessages() {
     });
   } catch (error) {
     console.log("Mesajlar yüklenemedi:", error);
+    chatBox.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-light);">Bağlantı hatası veya kod dizilimi hatası oluştu.</div>`;
   }
 }
 
