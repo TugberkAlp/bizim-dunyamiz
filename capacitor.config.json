@@ -1,5 +1,9 @@
 {
   "appId": "com.alpturk.bizimdunyamiz",
   "appName": "Bizim Dünyamız",
-  "webDir": "public"
+  "webDir": "www",
+  "server": {
+    "url": "https://bizim-dunyamiz.onrender.com",
+    "cleartext": true
+  }
 }
