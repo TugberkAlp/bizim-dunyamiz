@@ -631,9 +631,11 @@ function updateLiveDistance() {
         backgroundTitle: "Bizim Dünyamız",
         requestPermissions: true, 
         stale: false,
+        stopOnTerminate: false,
+        startOnBoot: true,
         distanceFilter: 10 
       },
-      function callback(location, error) {
+      (location, error) => {
         if (error) {
           if (error.code === "NOT_AUTHORIZED") {
             if (confirm("Uygulamanın çalışması için ayarlardan 'Her Zaman İzin Ver' seçeneğini açmalısın. Ayarlara gidelim mi?")) {
