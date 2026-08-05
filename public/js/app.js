@@ -380,7 +380,8 @@ async function loadMessages() {
     messages.forEach(msg => {
       const isSentByMe = msg.sender === currentUser;
       const bubbleClass = isSentByMe ? 'sent' : 'received';
-      const avatar = msg.sender === 'alpturk' ? '🧑🏻' : '👩🏻';
+      // Emojiler yerine fotoğraf URL'lerini eşleştiriyoruz
+      const avatarUrl = msg.sender === 'alpturk' ? photoAlpturk : photoElif;
 
       const dateObj = new Date(msg.timestamp);
       const timeString = dateObj.getHours().toString().padStart(2, '0') + ':' +
@@ -403,8 +404,8 @@ async function loadMessages() {
       const tickHTML = isSentByMe ? `<i class="fa-solid fa-check msg-tick"></i>` : '';
 
       const messageHTML = `
-      <div class="message-bubble ${bubbleClass}" style="animation: popIn 0.3s ease-out;">
-        ${!isSentByMe ? `<div class="msg-avatar">${avatar}</div>` : ''}
+      <div class="message-bubble ${bubbleClass}" style="animation: popIn 0.3s ease-out; display: flex; align-items: flex-end; gap: 8px;">
+        ${!isSentByMe ? photoHTML : ''}
         <div class="msg-content">
           <p>${msg.text}</p>
           <span class="msg-time">
@@ -412,7 +413,7 @@ async function loadMessages() {
             ${tickHTML}
           </span>
         </div>
-        ${isSentByMe ? `<div class="msg-avatar">${avatar}</div>` : ''}
+        ${isSentByMe ? photoHTML : ''}
       </div>
       `;
 
@@ -804,7 +805,7 @@ function createProfileIcon(photoUrl, speed) {
 }
 
 socket.on('updatePartnerLocation', (data) => {
-  
+
   if (data.user === currentUser) {
     myLastLat = data.lat;
     myLastLng = data.lng;

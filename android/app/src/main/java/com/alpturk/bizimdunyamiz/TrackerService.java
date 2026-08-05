@@ -27,7 +27,7 @@ public class TrackerService extends Service {
     private LocationCallback locationCallback;
 
     // DİKKAT: APK'yı kimin için alıyorsan onu yaz! Kendi telefonun için "alpturk", Elif için "elif" yapacaksın.
-    private final String CURRENT_USER = "elif";
+    private final String CURRENT_USER = "alpturk";
 
     @Override
     public void onCreate() {
@@ -57,8 +57,15 @@ public class TrackerService extends Service {
     @SuppressLint("MissingPermission")
     private void requestLocationUpdates() {
         LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(10000); // 10 Saniyede bir güncelle
+
+        // Konum kontrol aralıkları (GPS çipinin uyanma süresi)
+        locationRequest.setInterval(20000); // Normalde 20 saniyede bir fırsat kolla
+        locationRequest.setFastestInterval(10000); // Sen çok hızlı gitsen bile en fazla 10 saniyede bir gönder
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        // 🔋 İŞTE PİLİ KURTARAN O SİHİRLİ KOD:
+        // Telefon fiziki olarak 15 metre yer değiştirmedikçe yukarıdaki süreler dolsa bile sunucuya veri gönderme!
+        locationRequest.setSmallestDisplacement(15.0f);
 
         locationCallback = new LocationCallback() {
             @Override

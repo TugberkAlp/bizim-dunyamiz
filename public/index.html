@@ -29,12 +29,16 @@
 
         <div class="user-select-container">
           <button class="user-btn" onclick="loginAs('alpturk')">
-            <div class="user-avatar" style="background: var(--secondary);">🧑🏻</div>
+            <div class="user-avatar" style="padding: 0; overflow: hidden; border: 2px solid var(--secondary);">
+              <img src="assets/images/alpturk.png" alt="Alptürk" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
             <span>Alptürk</span>
           </button>
 
           <button class="user-btn" onclick="loginAs('elif')">
-            <div class="user-avatar" style="background: var(--primary);">👩🏻</div>
+            <div class="user-avatar" style="padding: 0; overflow: hidden; border: 2px solid var(--primary);">
+              <img src="assets/images/elif.png" alt="Elif" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
             <span>Elif</span>
           </button>
         </div>
@@ -57,8 +61,8 @@
       <!-- Sağ Taraf: Avatarlar ve Minik Mesafe Rozeti -->
       <div class="header-right">
         <div class="profile-pics">
-          <div class="profile-pic">🧑🏻</div>
-          <div class="profile-pic">👩🏻</div>
+          <img src="assets/images/alpturk.png" alt="Alptürk" class="profile-pic" style="padding: 0; object-fit: cover; border: 1px solid #ccc;">
+          <img src="assets/images/elif.png" alt="Elif" class="profile-pic" style="padding: 0; object-fit: cover; margin-left: -10px; border: 1px solid #ccc;">
         </div>
 
         <!-- YENİ: Tıklanamaz, Küçük Mesafe Rozeti -->
@@ -239,11 +243,15 @@
     <div id="mood-modal" class="modal-overlay" style="display: none;">
       <div class="modal-box">
         <span class="close-btn" onclick="closeMoodModal()"><i class="fa-solid fa-xmark"></i></span>
-        <h3>Modunu Seç 💡</h3>
-        <div class="mood-select-grid">
-          <button class="mood-option" onclick="applyMood('duygusal', '#d28fb0')">Duygusal (Pembe) 🌸</button>
-          <button class="mood-option" onclick="applyMood('mutlu', '#e5cd85')">Mutlu (Sarı) ✨</button>
-          <button class="mood-option" onclick="applyMood('huzurlu', '#64C8C0')">Huzurlu (Turkuaz) 🌊</button>
+        <h3 style="margin-bottom: 15px;">Şu An Nasıl Hissediyorsun? ✨</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+          <button class="btn-small" style="background-color: #F1C40F; color: #333; border: none;" onclick="applyMood('Çok Mutlu', '#F1C40F')">Mutlu 💛</button>
+          <button class="btn-small" style="background-color: #3498DB; color: white; border: none;" onclick="applyMood('Çok Özlemiş', '#3498DB')">Özlemli 💙</button>
+          <button class="btn-small" style="background-color: #E74C3C; color: white; border: none;" onclick="applyMood('Duygusal', '#E74C3C')">Duygusal 💗</button>
+          <button class="btn-small" style="background-color: #7F8C8D; color: white; border: none;" onclick="applyMood('Yorgun', '#7F8C8D')">Yorgun 🤎</button>
+          <button class="btn-small" style="background-color: #E67E22; color: white; border: none;" onclick="applyMood('Heyecanlı', '#E67E22')">Heyecanlı 🧡</button>
+          <button class="btn-small" style="background-color: #900C3F; color: white; border: none;" onclick="applyMood('Biraz Kızgın', '#900C3F')">Kızgın ❤️</button>
+          <button class="btn-small" style="background-color: #9B59B6; color: white; border: none;" onclick="applyMood('Huzurlu', '#9B59B6')">Huzurlu 💜</button>
         </div>
       </div>
     </div>
