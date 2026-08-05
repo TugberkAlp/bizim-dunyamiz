@@ -6,6 +6,7 @@ const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose'); // Veritabanı yöneticimiz
 const { Server } = require('socket.io');
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 3000;
 
 // Form/mesaj verilerini okuyabilmek için
 app.use(express.json());
+app.use(cors());
 
 // --- DEDEKTİF KODLARI ---
 console.log("🔍 Veritabanı linki kontrol ediliyor...");

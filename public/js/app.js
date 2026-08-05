@@ -1,6 +1,8 @@
 // UYGULAMA AYARLARI
 
-const socket = io();
+const SERVER_URL = "https://bizim-dunyamiz.onrender.com";
+
+const socket = io(SERVER_URL);
 let currentUser = localStorage.getItem('user');
 
 let periodData = {
@@ -91,7 +93,7 @@ function selectMood(element, mood) {
 
 async function loadLamps() {
   try {
-    const response = await fetch('/api/lamps');
+    const response = await fetch(SERVER_URL + '/api/lamps');
     const data = await response.json();
 
     data.forEach(lamp => {
@@ -184,7 +186,7 @@ async function loadSpecialDays() {
   `;
 
   try {
-    const response = await fetch('/api/special-days');
+    const response = await fetch(SERVER_URL + '/api/special-days');
     const data = await response.json();
 
     specialDays = data;
@@ -236,7 +238,7 @@ function renderSpecialDays() {
 
 async function loadPeriodData() {
   try {
-    const response = await fetch('/api/period');
+    const response = await fetch(SERVER_URL + '/api/period');
     const data = await response.json();
 
     if (data && data.lastStartDate) {
@@ -324,7 +326,7 @@ document.getElementById('add-day-form').addEventListener('submit', async functio
   const dayText = dateObj.getDate() + " " + monthNames[dateObj.getMonth()];
 
   try {
-    const response = await fetch('/api/special-days', {
+    const response = await fetch(SERVER_URL + '/api/special-days', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -361,7 +363,7 @@ async function loadMessages() {
   `;
 
   try {
-    const response = await fetch('/api/messages');
+    const response = await fetch(SERVER_URL + '/api/messages');
     const messages = await response.json();
 
     chatBox.innerHTML = '';
@@ -423,7 +425,7 @@ async function sendMessage() {
   if (messageText === '') return;
 
   try {
-    const response = await fetch('/api/messages', {
+    const response = await fetch(SERVER_URL + '/api/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -613,7 +615,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
-
+/*
 function updateLiveDistance() {
   const headerVal = document.getElementById('header-distance-val');
 
@@ -648,10 +650,67 @@ function updateLiveDistance() {
     );
   }
 }
+*/
 
+// --- YENİ VE GÜÇLÜ: ARKA PLAN CANLI KONUM SİSTEMİ ---
+function updateLiveDistance() {
+  const headerVal = document.getElementById('header-distance-val');
+
+  // Arka Plan Bekçisini Başlatıyoruz
+  BackgroundGeolocation.addWatcher(
+    {
+      // Ayarlar: 
+      backgroundMessage: "Bizim Dünyamız arka planda konumunuzu güncelliyor.",
+      backgroundTitle: "Bizim Dünyamız",
+      requestPermissions: true, // "Her Zaman İzin Ver" yetkisini ister
+      stale: false,
+      distanceFilter: 10 // Kullanıcı 10 metre hareket ettiğinde tetiklenir (Şarjı korur)
+    },
+    function callback(location, error) {
+      if (error) {
+        if (error.code === "NOT_AUTHORIZED") {
+          if (confirm("Uygulamanın çalışması için ayarlardan 'Her Zaman İzin Ver' seçeneğini açmalısın. Ayarlara gidelim mi?")) {
+            BackgroundGeolocation.openSettings();
+          }
+        }
+        return console.error("Konum hatası:", error);
+      }
+
+      // Konum Başarıyla Alındı!
+      const myLat = location.latitude;
+      const myLng = location.longitude;
+      // Capacitor hızı metre/saniye verir, km/s'ye çeviriyoruz
+      const speed = location.speed ? (location.speed * 3.6).toFixed(1) : "0.0";
+      
+      const distance = calculateDistance(myLat, myLng, partnerLocation.lat, partnerLocation.lng);
+
+      // 1. Ekrandaki yazıyı güncelle
+      if (headerVal) headerVal.innerText = distance.toFixed(1);
+
+      // 2. Harita açıksa pini yürüt
+      const modal = document.getElementById('location-modal');
+      if (modal && modal.style.display === 'flex') {
+        updateMap(myLat, myLng, speed);
+      }
+
+      // 3. Postacıya (Socket.io) yeni konumu fırlat (Arkada planda olsak bile!)
+      socket.emit('sendLocation', {
+        user: currentUser,
+        lat: myLat,
+        lng: myLng,
+        speed: speed
+      });
+      
+      console.log("Arka plan konumu başarıyla gönderildi!");
+    }
+  ).then(function afterPromise(watcher_id) {
+    // İzleyici başarıyla kuruldu
+    console.log("Arka plan izleyici ID'si:", watcher_id);
+  });
+}
 async function loadLocations() {
   try {
-    const response = await fetch('/api/locations');
+    const response = await fetch(SERVER_URL + '/api/locations');
     const data = await response.json();
 
     data.forEach(loc => {
@@ -822,11 +881,6 @@ socket.on('updateLampColor', (data) => {
   if (lampElement) applyMoodToElement(lampElement, data.color);
 });
 
-// Service Worker Kaydı (PWA Kurulumu İçin)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Service Worker Kayıtlı!'))
-      .catch(err => console.log('Service Worker Hatası:', err));
-  });
-}
+// Capacitor Background Geolocation Eklentisini Çağırıyoruz
+const { registerPlugin } = capacitorExports;
+const BackgroundGeolocation = registerPlugin('BackgroundGeolocation');
