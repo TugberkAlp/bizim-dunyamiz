@@ -1,12 +1,10 @@
 // UYGULAMA AYARLARI
-import { registerPlugin } from '@capacitor/core';
-
-const UserStorage = registerPlugin('UserStorage');
 
 const SERVER_URL = "https://bizim-dunyamiz.onrender.com";
 
+const UserStorage = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.UserStorage : null;
 // Capacitor global objesinden eklentiyi alıyoruz (sadece telefondayken çalışır)
-const BackgroundGeolocation = window.Capacitor ? window.Capacitor.Plugins.BackgroundGeolocation : null;
+const BackgroundGeolocation = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.BackgroundGeolocation : null;
 
 const socket = io(SERVER_URL);
 let currentUser = localStorage.getItem('user');
@@ -123,7 +121,7 @@ const messageInput = document.getElementById('message-input');
 async function loginAs(selectedUser) {
   localStorage.setItem('user', selectedUser);
 
-  if (window.Capacitor) {
+  if (UserStorage && typeof UserStorage.setUsername === 'function') {
     try {
       await UserStorage.setUsername({ username: selectedUser });
       console.log("Kullanıcı adı Java'ya başarıyla aktarıldı:", selectedUser);
