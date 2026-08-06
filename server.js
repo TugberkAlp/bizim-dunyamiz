@@ -205,7 +205,6 @@ app.get('/api/locations', async (req, res) => {
   try {
     const locations = await Location.find();
     res.json(locations);
-    console.log(locations);
   } catch (error) {
     console.log("Konum alınamadı:", error);
     res.status(500).json({ error: "Sunucu hatası" });
