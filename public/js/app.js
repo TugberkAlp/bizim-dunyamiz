@@ -105,7 +105,6 @@ function initPushNotifications() {
   // Uygulama arka plandayken bildirime tıklandığında
   PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
     console.log('Bildirime tıklandı: ', notification);
-    // İsteğe bağlı: Bildirime tıklandığında direkt mesajlar sayfasına yönlendirebilirsin
     switchTab('notes');
   });
 }
@@ -138,13 +137,10 @@ function selectMood(element, mood) {
   const isAlpturksLamp = element.classList.contains('right-light');
   const isElifsLamp = element.classList.contains('left-light');
 
-  // Eğer KENDİ lambana tıklıyorsan mod değiştirme penceresini aç
   if ((currentUser === 'alpturk' && isAlpturksLamp) || (currentUser === 'elif' && isElifsLamp)) {
     currentLampElement = element;
     document.getElementById('mood-modal').style.display = 'flex';
-  }
-  // Eğer başkasının lambasına tıklıyorsan duygu durumunu göster
-  else {
+  } else {
     const owner = isElifsLamp ? "Elif" : "Alptürk";
     const moodInfo = isElifsLamp ? lampStates.elif : lampStates.alpturk;
     alert(`${owner} şu anda ${moodInfo.mood} hissediyor. ✨`);
@@ -172,13 +168,11 @@ function closeMoodModal() {
   document.getElementById('mood-modal').style.display = 'none';
 }
 
-// Seçilen modu uygular
 function applyMood(mood, color) {
   if (currentLampElement) {
     const isElifsLamp = currentLampElement.classList.contains('left-light');
     const owner = isElifsLamp ? 'elif' : 'alpturk';
 
-    // 1. Durumu hafızaya kaydet
     lampStates[owner] = { mood: mood, color: color };
     applyMoodToElement(currentLampElement, color);
 
@@ -295,8 +289,6 @@ function renderSpecialDays() {
   });
 }
 
-
-
 async function loadPeriodData() {
   try {
     const response = await fetch(SERVER_URL + '/api/period');
@@ -362,7 +354,7 @@ function renderPeriodTracker() {
     actionArea.innerHTML = `<button class="btn-small" onclick="openPeriodModal()">Tarihi Güncelle & Not Bırak 🌸</button>`;
   } else {
     actionArea.innerHTML = `<p style="font-size:11px; text-align:center; color:var(--text-light); margin-top:10px;">
-      <i class=fa-solid fa-lock"></i> Sadece Elif düzenleyebilir
+      <i class="fa-solid fa-lock"></i> Sadece Elif düzenleyebilir
       </p>`;
   }
 }
@@ -420,8 +412,6 @@ document.getElementById('add-day-form').addEventListener('submit', async functio
 async function loadMessages() {
   const chatBox = document.getElementById('chat-box');
 
-  // 1. DÜZELTME: Yükleniyor ekranını SADECE sohbet kutusu ilk açılışta boşsa göster. 
-  // Yeni mesaj atarken ekranın silinmesini ve titremesini engeller.
   if (chatBox.innerHTML.trim() === '') {
     chatBox.innerHTML = `
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-light); gap: 10px; opacity: 0.7; animation: popIn 0.3s ease-out;">
@@ -435,7 +425,6 @@ async function loadMessages() {
     const response = await fetch(SERVER_URL + '/api/messages');
     const messages = await response.json();
 
-    // 2. DÜZELTME: Mesajları hemen ekrana basmak yerine önce bu hafıza değişkeninde biriktiriyoruz.
     let yeniHTML = '';
     let lastDateString = "";
     const todayString = new Date().toLocaleDateString('tr-TR');
@@ -443,7 +432,6 @@ async function loadMessages() {
     messages.forEach(msg => {
       const isSentByMe = msg.sender === currentUser;
       const bubbleClass = isSentByMe ? 'sent' : 'received';
-
       const avatarUrl = msg.sender === 'alpturk' ? photoAlpturk : photoElif;
 
       let timeString = "";
@@ -485,10 +473,8 @@ async function loadMessages() {
       `;
     });
 
-    // 3. DÜZELTME: Tüm mesajlar hazır olduktan sonra tek bir hamlede HTML'e yazdırıyoruz.
     chatBox.innerHTML = yeniHTML;
 
-    // 4. Kaydırma çubuğunu en aşağı sabitleme (Artık ekran silinmediği için kusursuz çalışacak)
     setTimeout(() => {
       chatBox.scrollTop = chatBox.scrollHeight;
     }, 50);
@@ -560,7 +546,6 @@ document.getElementById('update-period-form').addEventListener('submit', functio
 
   if (newDate) {
     periodData.lastStartDate = newDate;
-
     renderPeriodTracker();
   }
 
@@ -575,7 +560,6 @@ document.getElementById('update-period-form').addEventListener('submit', functio
 function openGame() {
   document.querySelectorAll('.content').forEach(page => page.style.display = 'none');
   document.getElementById('game-page').style.display = 'block';
-
   initMemoryGame();
 }
 
@@ -586,7 +570,7 @@ function closeGame() {
 
 // FOTO PUZZLE OYUNU
 const memoryEmojis = ['🥰', '☕', '🎮', '🧟‍♂️', '🎢', '📸'];
-let cards = [...memoryEmojis, ...memoryEmojis]; // Her birinden 2 tane -> Toplam 12
+let cards = [...memoryEmojis, ...memoryEmojis];
 
 let hasFlippedCard = false;
 let lockBoard = false;
@@ -685,7 +669,7 @@ function resetBoard() {
   secondCard = null;
 }
 
-// --- CANLI MESAFE MANTIĞI
+// --- CANLI MESAFE MANTIĞI ---
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -705,32 +689,33 @@ async function loadLocations() {
 
     data.forEach(loc => {
       if (loc.user !== currentUser) {
-        // PARTNERİN KONUMU
         if (loc.lat !== 0 && loc.lng !== 0) {
           partnerLocation.lat = loc.lat;
           partnerLocation.lng = loc.lng;
           partnerLocation.speed = loc.speed || "0.0";
-        }
 
-        if (map && partnerMarker && partnerLocation.lat !== 0) {
-          partnerMarker.setLatLng([partnerLocation.lat, partnerLocation.lng]);
-          partnerMarker.setIcon(createProfileIcon(partnerPhoto, partnerLocation.speed));
+          if (map) {
+            if (!partnerMarker) {
+              partnerMarker = L.marker([partnerLocation.lat, partnerLocation.lng], { icon: createProfileIcon(partnerPhoto, partnerLocation.speed) }).addTo(map);
+            } else {
+              partnerMarker.setLatLng([partnerLocation.lat, partnerLocation.lng]);
+              partnerMarker.setIcon(createProfileIcon(partnerPhoto, partnerLocation.speed));
+            }
+          }
         }
       } else {
-        // KENDİ KONUMUMUZ (Java servisinin veritabanına yazdığı gerçek konum)
         if (loc.lat !== 0 && loc.lng !== 0) {
           myLastLat = loc.lat;
           myLastLng = loc.lng;
         }
 
         if (map && myMarker) {
-          myMarker.setLatLng([loc.lat, loc.lng]);
+          myMarker.setLatLng([myLastLat, myLastLng]);
           myMarker.setIcon(createProfileIcon(myPhoto, loc.speed || "0.0"));
         }
       }
     });
 
-    // Mesafeyi hesapla
     if (partnerLocation.lat !== 0) {
       const distance = calculateDistance(myLastLat, myLastLng, partnerLocation.lat, partnerLocation.lng);
       const headerVal = document.getElementById('header-distance-val');
@@ -747,7 +732,6 @@ function updateGreeting() {
   if (!greetingElement) return;
 
   const hour = new Date().getHours();
-
   const name = (currentUser === 'elif') ? "bebeğim" : "sevgilim";
 
   if (hour >= 5 && hour < 12) {
@@ -799,7 +783,6 @@ function feedPet() {
   const pet = document.getElementById('the-pet');
   const msg = document.getElementById('pet-message');
 
-  // Zıplama efekti
   pet.style.transform = 'scale(1.2) translateY(-20px)';
   msg.innerText = "Yummy! Yemek çok güzel";
 
@@ -817,7 +800,6 @@ function openLocationModal() {
   const modal = document.getElementById('location-modal');
   modal.style.display = 'flex';
 
-  // Eğer harita daha önce hiç açılmadıysa hemen ilk kurulumunu yap
   if (!map) {
     updateMap(myLastLat, myLastLng, "0.0");
   }
@@ -826,18 +808,22 @@ function openLocationModal() {
     if (map) {
       map.invalidateSize();
 
-      // Eğer marker'lar tamamsa haritayı üzerlerine odakla
-      if (myMarker && partnerMarker) {
+      const markers = [];
+      if (myMarker) markers.push(myMarker);
+      if (partnerMarker) markers.push(partnerMarker);
+
+      if (markers.length > 0) {
         try {
-          const group = new L.featureGroup([myMarker, partnerMarker]);
+          const group = new L.featureGroup(markers);
           map.fitBounds(group.getBounds().pad(0.3));
         } catch (e) {
           console.log("Harita zoom hatası:", e);
         }
       }
     }
-  }, 200);
+  }, 250);
 }
+
 function closeLocationModal() {
   document.getElementById('location-modal').style.display = 'none';
 }
@@ -845,7 +831,6 @@ function closeLocationModal() {
 // --- HARİTAYI ÇİZME VE GÜNCELLEME ---
 
 function updateMap(myLat, myLng, speed) {
-
   if (!map) {
     map = L.map('map');
 
@@ -853,11 +838,9 @@ function updateMap(myLat, myLng, speed) {
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Sabit Konumları (Evleri) Haritaya Ekle
     L.marker(alpturkHomeCoords, { icon: homeIcon }).bindPopup("Alptürk'ün Evi 🏠").addTo(map);
     L.marker(elifHomeCoords, { icon: homeIcon }).bindPopup("Elif'in Evi 🏠").addTo(map);
 
-    // Bizim Canlı PİNLERİMİZİ Ekle (Fotoğraflı)
     myMarker = L.marker([myLat, myLng], { icon: createProfileIcon(myPhoto, speed) }).addTo(map);
     const markersList = [myMarker];
 
@@ -865,7 +848,9 @@ function updateMap(myLat, myLng, speed) {
       partnerMarker = L.marker([partnerLocation.lat, partnerLocation.lng], { icon: createProfileIcon(partnerPhoto, partnerLocation.speed) }).addTo(map);
       markersList.push(partnerMarker);
     }
-    const group = new L.featureGroup([myMarker, partnerMarker]);
+
+    // GÜVENLİK DÜZELTMESİ: Sadece mevcut olan marker'lar gruba eklenir, çökme engellenir
+    const group = new L.featureGroup(markersList);
     map.fitBounds(group.getBounds().pad(0.2));
 
     setTimeout(() => {
@@ -898,7 +883,6 @@ function createProfileIcon(photoUrl, speed) {
 }
 
 socket.on('updatePartnerLocation', (data) => {
-
   if (data.user === currentUser) {
     myLastLat = data.lat;
     myLastLng = data.lng;
@@ -907,22 +891,28 @@ socket.on('updatePartnerLocation', (data) => {
       myMarker.setLatLng([data.lat, data.lng]);
       myMarker.setIcon(createProfileIcon(myPhoto, data.speed || "0.0"));
     }
-    return; // Kendi pinimizi güncelledik, partner kodlarına geçmeden durdur.
-  }
-  // 2. EĞER GELEN VERİ PARTNERİNSE
-  console.log("Bebeğinden yeni konum geldi!", data);
-
-  partnerLocation.lat = data.lat;
-  partnerLocation.lng = data.lng;
-  partnerLocation.speed = data.speed || "0.0";
-
-  if (map && partnerMarker) {
-    partnerMarker.setLatLng([data.lat, data.lng]);
-    partnerMarker.setIcon(createProfileIcon(partnerPhoto, data.speed));
+    return;
   }
 
-  if (myMarker) {
-    const newDistance = calculateDistance(myLastLat, myLastLng, data.lat, data.lng);
+  if (data.lat !== 0 && data.lng !== 0) {
+    console.log("Bebeğinden yeni konum geldi!", data);
+
+    partnerLocation.lat = data.lat;
+    partnerLocation.lng = data.lng;
+    partnerLocation.speed = data.speed || "0.0";
+
+    if (map) {
+      if (!partnerMarker) {
+        partnerMarker = L.marker([data.lat, data.lng], { icon: createProfileIcon(partnerPhoto, partnerLocation.speed) }).addTo(map);
+      } else {
+        partnerMarker.setLatLng([data.lat, data.lng]);
+        partnerMarker.setIcon(createProfileIcon(partnerPhoto, partnerLocation.speed));
+      }
+    }
+  }
+
+  if (myMarker && partnerLocation.lat !== 0) {
+    const newDistance = calculateDistance(myLastLat, myLastLng, partnerLocation.lat, partnerLocation.lng);
     const headerVal = document.getElementById('header-distance-val');
     if (headerVal) headerVal.innerText = newDistance.toFixed(1);
   }
@@ -930,7 +920,7 @@ socket.on('updatePartnerLocation', (data) => {
 
 socket.on('refreshMessages', () => {
   loadMessages();
-})
+});
 
 socket.on('updateLampColor', (data) => {
   lampStates[data.user] = { mood: data.mood, color: data.color };
