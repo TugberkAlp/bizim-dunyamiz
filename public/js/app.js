@@ -207,6 +207,7 @@ function switchTab(tabName, element) {
     document.getElementById('home-page').style.display = 'block';
   } else if (tabName === 'calendar') {
     document.getElementById('calendar-page').style.display = 'block';
+    loadSpecialDays();
   } else if (tabName === 'notes') {
     document.getElementById('notes-page').style.display = 'flex';
     const chatBox = document.getElementById('chat-box');
