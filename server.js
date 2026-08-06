@@ -70,38 +70,44 @@ app.post('/api/messages', async (req, res) => {
   try {
     const { sender, receiver, text } = req.body;
 
-    // 1. MongoDB'den alıcının kalıcı token'ını çekiyoruz
+    // 1. ÖNEMLİ: Önce mesajı MongoDB'ye kesin olarak kaydedelim (Mesaj kaybolmasın)
+    const newMessage = new Message({ sender, text });
+    await newMessage.save();
+
+    // 2. Alıcının FCM token'ını veritabanından bulmaya çalışalım
     const targetUser = await User.findOne({ username: receiver });
 
-    if (!targetUser || !targetUser.fcmToken) {
-      return res.status(400).json({ success: false, error: "Alıcının kayıtlı token'ı veritabanında bulunamadı!" });
+    if (targetUser && targetUser.fcmToken) {
+      const receiverToken = targetUser.fcmToken;
+      const senderPhoto = sender === 'alpturk' ? 'alpturk.png' : 'elif.png';
+      const photoLink = `https://bizim-dunyamiz.onrender.com/assets/images/${senderPhoto}`;
+
+      const messagePayload = {
+        token: receiverToken,
+        notification: {
+          title: 'Bebeğim 💖',
+          body: text,
+          imageUrl: photoLink
+        }
+      };
+
+      // Bildirimi göndermeyi deneyelim (Hata alsa bile mesaj gitmiş olacak)
+      try {
+        await getMessaging().send(messagePayload);
+        console.log(`Bildirim başarıyla ${receiver} kullanıcısına gönderildi.`);
+      } catch (notifError) {
+        console.log("⚠️ Bildirim gönderilemedi ama mesaj kaydedildi:", notifError);
+      }
+    } else {
+      console.log("⚠️ Alıcının FCM token'ı veritabanında yok, sadece mesaj kaydedildi.");
     }
 
-    const receiverToken = targetUser.fcmToken;
-
-    // 2. Gönderene göre fotoğraf seçimi
-    const senderPhoto = sender === 'alpturk' ? 'alpturk.png' : 'elif.png';
-    const photoLink = `https://bizim-dunyamiz.onrender.com/assets/images/${senderPhoto}`;
-
-    const messagePayload = {
-      token: receiverToken,
-      notification: {
-        title: 'Bebeğim 💖',
-        body: text,
-        imageUrl: photoLink
-      }
-    };
-
-    // 3. Bildirimi Firebase'e gönder ve bitmesini bekle
-    await getMessaging().send(messagePayload);
-    console.log(`Bildirim başarıyla ${receiver} kullanıcısına gönderildi.`);
-
-    // 4. İstemciye işlemin başarılı olduğunu bildir
-    res.json({ success: true });
+    // 3. İstemciye her halükarda başarılı de
+    res.json({ success: true, message: newMessage });
 
   } catch (error) {
-    console.log("Bildirim gönderme hatası:", error);
-    res.status(500).json({ success: false, error: "Mesaj gönderilirken sunucu hatası oluştu." });
+    console.log("Mesaj kaydedilemedi:", error);
+    res.status(500).json({ error: "Mesaj kaydedilirken sunucu hatası oluştu." });
   }
 });
 
