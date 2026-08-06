@@ -1,6 +1,5 @@
 // UYGULAMA AYARLARI
 import { registerPlugin } from '@capacitor/core';
-import { Preferences } from "@capacitor/preferences";
 
 const UserStorage = registerPlugin('UserStorage');
 
