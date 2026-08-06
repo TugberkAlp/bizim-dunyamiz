@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateGreeting();
     loadSpecialDays();
     loadPeriodData();
-    updateLiveDistance();
     loadMessages();
     loadLamps();
     loadLocations();
@@ -699,14 +698,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// --- YENİ VE GÜÇLÜ: ARKA PLAN CANLI KONUM SİSTEMİ ---
-function updateLiveDistance() {
-  const headerVal = document.getElementById('header-distance-val');
-
-  // 1. Eğer telefondaysak (Capacitor ortamı aktifse) arka plan takibini çalıştır
-
-}
-
 async function loadLocations() {
   try {
     const response = await fetch(SERVER_URL + '/api/locations');
@@ -715,18 +706,22 @@ async function loadLocations() {
     data.forEach(loc => {
       if (loc.user !== currentUser) {
         // PARTNERİN KONUMU
-        partnerLocation.lat = loc.lat;
-        partnerLocation.lng = loc.lng;
-        partnerLocation.speed = loc.speed || "0.0";
+        if (loc.lat !== 0 && loc.lng !== 0) {
+          partnerLocation.lat = loc.lat;
+          partnerLocation.lng = loc.lng;
+          partnerLocation.speed = loc.speed || "0.0";
+        }
 
-        if (map && partnerMarker) {
-          partnerMarker.setLatLng([loc.lat, loc.lng]);
-          partnerMarker.setIcon(createProfileIcon(partnerPhoto, loc.speed));
+        if (map && partnerMarker && partnerLocation.lat !== 0) {
+          partnerMarker.setLatLng([partnerLocation.lat, partnerLocation.lng]);
+          partnerMarker.setIcon(createProfileIcon(partnerPhoto, partnerLocation.speed));
         }
       } else {
         // KENDİ KONUMUMUZ (Java servisinin veritabanına yazdığı gerçek konum)
-        myLastLat = loc.lat;
-        myLastLng = loc.lng;
+        if (loc.lat !== 0 && loc.lng !== 0) {
+          myLastLat = loc.lat;
+          myLastLng = loc.lng;
+        }
 
         if (map && myMarker) {
           myMarker.setLatLng([loc.lat, loc.lng]);
@@ -856,13 +851,22 @@ function updateMap(myLat, myLng, speed) {
 
     // Bizim Canlı PİNLERİMİZİ Ekle (Fotoğraflı)
     myMarker = L.marker([myLat, myLng], { icon: createProfileIcon(myPhoto, speed) }).addTo(map);
-    partnerMarker = L.marker([partnerLocation.lat, partnerLocation.lng], { icon: createProfileIcon(partnerPhoto, partnerLocation.speed) }).addTo(map);
+    const markersList = [myMarker];
 
+    if (partnerLocation.lat !== 0 && partnerLocation.lng !== 0) {
+      partnerMarker = L.marker([partnerLocation.lat, partnerLocation.lng], { icon: createProfileIcon(partnerPhoto, partnerLocation.speed) }).addTo(map);
+      markersList.push(partnerMarker);
+    }
     const group = new L.featureGroup([myMarker, partnerMarker]);
     map.fitBounds(group.getBounds().pad(0.2));
   } else {
     myMarker.setLatLng([myLat, myLng]);
     myMarker.setIcon(createProfileIcon(myPhoto, speed));
+
+    if (partnerMarker && partnerLocation.lat !== 0 && partnerLocation.lng !== 0) {
+      partnerMarker.setLatLng([partnerLocation.lat, partnerLocation.lng]);
+      partnerMarker.setIcon(createProfileIcon(partnerPhoto, partnerLocation.speed));
+    }
   }
 }
 
