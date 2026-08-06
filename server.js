@@ -14,9 +14,9 @@ const { initializeApp, cert } = require("firebase-admin/app");
 // Render'ın .env içindeki JSON verisini güvenle okuması için:
 let serviceAccount;
 try {
-  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 } catch (error) {
-  console.error("FIREBASE_SERVICE_ACCOUNT JSON parse edilemedi!", error);
+    console.error("FIREBASE_SERVICE_ACCOUNT JSON parse edilemedi!", error);
 }
 
 initializeApp({
@@ -203,10 +203,9 @@ const Location = require('./models/Location');
 
 app.get('/api/locations', async (req, res) => {
   try {
-    const { user, lat, lng, speed, battery } = req.body;
-    console.log(`📍 KONUM & ŞARJ GELDİ -> Kullanıcı: ${user} | Şarj: %${battery} | Koordinat: ${lat}, ${lng}`);
     const locations = await Location.find();
     res.json(locations);
+    console.log(locations);
   } catch (error) {
     console.log("Konum alınamadı:", error);
     res.status(500).json({ error: "Sunucu hatası" });
