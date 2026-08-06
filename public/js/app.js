@@ -1,7 +1,4 @@
 // UYGULAMA AYARLARI
-console.log("🔍 DEBUG: app.js yüklendi. localStorage 'user' değeri:", localStorage.getItem('user'));
-const UserStorage = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.UserStorage : null;
-console.log("🔍 DEBUG: UserStorage eklentisi algılandı mı?", UserStorage ? "EVET" : "HAYIR (NULL)");
 
 const SERVER_URL = "https://bizim-dunyamiz.onrender.com";
 // Capacitor global objesinden eklentiyi alıyoruz (sadece telefondayken çalışır)
@@ -130,21 +127,7 @@ async function registerDeviceToken(user, token) {
 const messageInput = document.getElementById('message-input');
 
 async function loginAs(selectedUser) {
-  console.log("🔍 DEBUG: loginAs tıklandı, seçilen kullanıcı:", selectedUser);
   localStorage.setItem('user', selectedUser);
-
-  if (UserStorage && typeof UserStorage.setUsername === 'function') {
-    try {
-      console.log("🔍 DEBUG: loginAs içinde UserStorage çağrılıyor...");
-      const result = await UserStorage.setUsername({ username: selectedUser });
-      console.log("✅ DEBUG: loginAs UserStorage sonucu:", result);
-    } catch (e) {
-      console.error("❌ DEBUG: loginAs UserStorage hata fırlattı:", e);
-    }
-  } else {
-    console.log("❌ DEBUG: loginAs içinde UserStorage nesnesi bulunamadı!");
-  }
-
   window.location.reload();
 }
 

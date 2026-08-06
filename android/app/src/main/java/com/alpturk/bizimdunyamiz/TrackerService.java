@@ -44,8 +44,7 @@ public class TrackerService extends Service implements SensorEventListener {
     private long lastUploadTime = 0;
 
     private String getCurrentUser() {
-        SharedPreferences prefs = getSharedPreferences("BizimAyarlar", MODE_PRIVATE);
-        return prefs.getString("aktif_kullanici", "bilinmeyen_kullanici");
+        return "alpturk";
     }
 
     @Override
