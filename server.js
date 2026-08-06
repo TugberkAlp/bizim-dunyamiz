@@ -95,17 +95,21 @@ app.post('/api/messages', async (req, res) => {
     const receiver = req.body.sender === 'alpturk' ? 'elif' : 'alpturk';
     const receiverToken = userTokens[receiver];
 
-console.log("🔍 MESAJ GELDİ! Gönderen:", req.body.sender);
+    console.log("🔍 MESAJ GELDİ! Gönderen:", req.body.sender);
     console.log("🔍 HEDEF ALICI:", receiver);
     console.log("🔍 ALICININ TOKEN DURUMU:", receiverToken ? "Token Mevcut ✅" : "Token YOK (NULL) ❌");
     console.log("🔍 TÜM TOKENLAR:", JSON.stringify(userTokens));
+
+    const senderPhoto = req.body.sender === 'alpturk' ? 'alpturk.png' : 'elif.png';
+    const photoLink = `https://bizim-dunyamiz.onrender.com/assets/images/${senderPhoto}`;
 
     if (receiverToken) {
       const messagePayload = {
         token: receiverToken,
         notification: {
-          title: req.body.sender === 'alpturk' ? 'Alptürk 🧑🏻' : 'Elif 👩🏻',
-          body: req.body.text
+          title: 'Bebeğim 💖',
+          body: req.body.text,
+          imageUrl: photoLink
         }
       };
 
