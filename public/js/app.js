@@ -56,6 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     document.getElementById('login-screen').style.display = 'none';
 
+    if (UserStorage && typeof UserStorage.setUsername === 'function' && currentUser) {
+      UserStorage.setUsername({ username: currentUser }).catch(e => console.log(e));
+    }
+
     updateGreeting();
     loadSpecialDays();
     loadPeriodData();
