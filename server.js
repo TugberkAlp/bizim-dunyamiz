@@ -14,9 +14,9 @@ const { initializeApp, cert } = require("firebase-admin/app");
 // Render'ın .env içindeki JSON verisini güvenle okuması için:
 let serviceAccount;
 try {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 } catch (error) {
-    console.error("FIREBASE_SERVICE_ACCOUNT JSON parse edilemedi!", error);
+  console.error("FIREBASE_SERVICE_ACCOUNT JSON parse edilemedi!", error);
 }
 
 initializeApp({
@@ -84,46 +84,40 @@ app.get('/api/messages', async (req, res) => {
 
 app.post('/api/messages', async (req, res) => {
   try {
-    const yeniMesaj = new Message({
-      sender: req.body.sender,
-      text: req.body.text
-    });
+    const { sender, receiver, text } = req.body;
 
-    await yeniMesaj.save();
-    res.status(201).json(yeniMesaj);
-    // Mesaj gönderildiğinde karşı tarafa anlık bildirim fırlatma
-    const receiver = req.body.sender === 'alpturk' ? 'elif' : 'alpturk';
-    const receiverToken = userTokens[receiver];
+    // 1. MongoDB'den alıcının kalıcı token'ını çekiyoruz
+    const targetUser = await User.findOne({ username: receiver });
 
-    console.log("🔍 MESAJ GELDİ! Gönderen:", req.body.sender);
-    console.log("🔍 HEDEF ALICI:", receiver);
-    console.log("🔍 ALICININ TOKEN DURUMU:", receiverToken ? "Token Mevcut ✅" : "Token YOK (NULL) ❌");
-    console.log("🔍 TÜM TOKENLAR:", JSON.stringify(userTokens));
+    if (!targetUser || !targetUser.fcmToken) {
+      return res.status(400).json({ success: false, error: "Alıcının kayıtlı token'ı veritabanında bulunamadı!" });
+    }
 
-    const senderPhoto = req.body.sender === 'alpturk' ? 'alpturk.png' : 'elif.png';
+    const receiverToken = targetUser.fcmToken;
+
+    // 2. Gönderene göre fotoğraf seçimi
+    const senderPhoto = sender === 'alpturk' ? 'alpturk.png' : 'elif.png';
     const photoLink = `https://bizim-dunyamiz.onrender.com/assets/images/${senderPhoto}`;
 
-    if (receiverToken) {
-      const messagePayload = {
-        token: receiverToken,
-        notification: {
-          title: 'Bebeğim 💖',
-          body: req.body.text,
-          imageUrl: photoLink
-        }
-      };
+    const messagePayload = {
+      token: receiverToken,
+      notification: {
+        title: 'Bebeğim 💖',
+        body: text,
+        imageUrl: photoLink
+      }
+    };
 
-      getMessaging().send(messagePayload)
-        .then((response) => {
-          console.log('Bildirim başarıyla gönderildi:', response);
-        })
-        .catch((error) => {
-          console.log('Bildirim gönderme hatası:', error);
-        });
-    }
+    // 3. Bildirimi Firebase'e gönder ve bitmesini bekle
+    await getMessaging().send(messagePayload);
+    console.log(`Bildirim başarıyla ${receiver} kullanıcısına gönderildi.`);
+
+    // 4. İstemciye işlemin başarılı olduğunu bildir
+    res.json({ success: true });
+
   } catch (error) {
-    console.log("Mesaj kaydedilemedi:", error);
-    res.status(500).json({ error: "Mesaj kaydedilirken sunucu hatası oluştu." });
+    console.log("Bildirim gönderme hatası:", error);
+    res.status(500).json({ success: false, error: "Mesaj gönderilirken sunucu hatası oluştu." });
   }
 });
 
@@ -272,6 +266,23 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Bir cihaz ayrıldı:', socket.id);
   });
+});
+
+app.post('api/register-token', async (req, res) => {
+  try {
+    const { user, token } = req.body;
+
+    await User.findOneAndUpdate(
+      { username: user },
+      { fcmToken: token },
+      { upsert: true, new: true }
+    );
+    console.log(`${user} için FCM Token veritabanına kalıcı olarak kaydedildi.`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Token kaydetme hatası:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // Sunucuyu başlat
