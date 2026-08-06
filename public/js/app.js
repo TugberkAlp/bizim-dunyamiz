@@ -1,6 +1,8 @@
 // UYGULAMA AYARLARI
-
+import { registerPlugin } from '@capacitor/core';
 import { Preferences } from "@capacitor/preferences";
+
+const UserStorage = registerPlugin('UserStorage');
 
 await Preferences.set({
   key: 'username',
@@ -124,9 +126,17 @@ async function registerDeviceToken(user, token) {
 
 const messageInput = document.getElementById('message-input');
 
-function loginAs(selectedUser) {
+async function loginAs(selectedUser) {
   localStorage.setItem('user', selectedUser);
 
+  if (window.Capacitor) {
+    try {
+      await UserStorage.setUsername({ username: selectedUser });
+      console.log("Kullanıcı adı Java'ya başarıyla aktarıldı:", selectedUser);
+    } catch (e) {
+      console.error("Java'ya isim aktarılırken hata:", e);
+    }
+  }
   window.location.reload();
 }
 
