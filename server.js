@@ -8,11 +8,19 @@ const mongoose = require('mongoose'); // Veritabanı yöneticimiz
 const { Server } = require('socket.io');
 const cors = require('cors');
 
-const admin = require("firebase-admin");
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+// --- YENİ VE HATASIZ FIREBASED BAŞLATMA YÖNTEMİ ---
+const { initializeApp, cert } = require("firebase-admin/app");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+// Render'ın .env içindeki JSON verisini güvenle okuması için:
+let serviceAccount;
+try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} catch (error) {
+    console.error("FIREBASE_SERVICE_ACCOUNT JSON parse edilemedi!", error);
+}
+
+initializeApp({
+  credential: cert(serviceAccount)
 });
 
 const app = express();
