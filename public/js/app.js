@@ -4,11 +4,6 @@ import { Preferences } from "@capacitor/preferences";
 
 const UserStorage = registerPlugin('UserStorage');
 
-await Preferences.set({
-  key: 'username',
-  value: 'alpturk'
-});
-
 const SERVER_URL = "https://bizim-dunyamiz.onrender.com";
 
 // Capacitor global objesinden eklentiyi alıyoruz (sadece telefondayken çalışır)
