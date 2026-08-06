@@ -85,6 +85,11 @@ app.post('/api/messages', async (req, res) => {
     const receiver = req.body.sender === 'alpturk' ? 'elif' : 'alpturk';
     const receiverToken = userTokens[receiver];
 
+console.log("🔍 MESAJ GELDİ! Gönderen:", req.body.sender);
+    console.log("🔍 HEDEF ALICI:", receiver);
+    console.log("🔍 ALICININ TOKEN DURUMU:", receiverToken ? "Token Mevcut ✅" : "Token YOK (NULL) ❌");
+    console.log("🔍 TÜM TOKENLAR:", JSON.stringify(userTokens));
+
     if (receiverToken) {
       const messagePayload = {
         token: receiverToken,
