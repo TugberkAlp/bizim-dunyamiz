@@ -485,6 +485,8 @@ async function sendMessage() {
   const messageText = inputField.value.trim();
   if (messageText === '') return;
 
+  const receiverUser = currentUser === 'alpturk' ? 'elif' : 'alpturk';
+
   try {
     const response = await fetch(SERVER_URL + '/api/messages', {
       method: 'POST',
@@ -493,6 +495,7 @@ async function sendMessage() {
       },
       body: JSON.stringify({
         sender: currentUser,
+        receiver: receiverUser,
         text: messageText
       })
     });
@@ -501,6 +504,8 @@ async function sendMessage() {
       inputField.value = '';
       loadMessages();
       socket.emit('chatMessageSent');
+    } else {
+      console.log("Sunucu mesajı reddetti.");
     }
   } catch (error) {
     console.log("Mesaj gönderilemedi:", error);
