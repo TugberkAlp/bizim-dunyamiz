@@ -13,28 +13,35 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import android.content.SharedPreferences;
 
 public class TrackerService extends Service implements SensorEventListener {
     private FusedLocationProviderClient fusedLocationClient;
-    private LocationCallback locationCallback;
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private long lastShakeTime = 0;
 
-    private final String CURRENT_USER = "alpturk"; // Elif için "elif" yapılacak
+    private Handler handler;
+    private Runnable locationRunnable;
+    private long currentInterval = 120000; // Başlangıöta sabitken 2 dakika
+
+    private String getCurrentUser() {
+        SharedPreferences prefs = getSharedPreferences("CapacitorStorage", MODE_PRIVATE);
+        return prefs.getString("username", "anonim");
+    }
 
     @Override
     public void onCreate() {
@@ -52,7 +59,7 @@ public class TrackerService extends Service implements SensorEventListener {
 
         createNotificationChannel();
         startForeground(1, getNotification());
-        requestLocationUpdates();
+        startSingleShotLoop();
     }
 
     private void createNotificationChannel() {
@@ -71,29 +78,49 @@ public class TrackerService extends Service implements SensorEventListener {
                 .build();
     }
 
-    @SuppressLint("MissingPermission")
-    private void requestLocationUpdates() {
-        LocationRequest locationRequest = LocationRequest.create();
-
-        locationRequest.setInterval(15000);        // Normalde 15 saniye
-        locationRequest.setFastestInterval(10000);   // En hızlı 10 saniye
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // Hassas konum (Motor/Araç için önemli)
-
-        // SİHİRLİ KURAL: En az 15 metre yer değiştirdiğinde tetiklenir.
-        // Sabit dururken yerinde saydığı için pil harcamaz, hareket edince 15 saniyede bir akmaya başlar.
-        locationRequest.setSmallestDisplacement(15.0f);
-
-        locationCallback = new LocationCallback() {
+    private void startSingleShotLoop() {
+        handler = new Handler(Looper.getMainLooper());
+        locationRunnable = new Runnable() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) return;
-                for (Location location : locationResult.getLocations()) {
-                    sendLocationToServer(location);
-                }
+            public void run() {
+                fetchSingleLocation();
+                handler.postDelayed(this, currentInterval);
             }
         };
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+        handler.post(locationRunnable);
     }
+
+    @SuppressLint("MissingPermission")
+    private void fetchSingleLocation() {
+        // ÖNCE TAZE KONUM İSTE (Gerçek zamanlı hız ve yer için)
+        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cancellationTokenSource.getToken())
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        processAndSendLocation(location);
+                    } else {
+                        // YEDEK PLAN: Kapalı alanda GPS çekmezse (null dönerse) son bilinen konumu al
+                        fusedLocationClient.getLastLocation().addOnSuccessListener(lastLoc -> {
+                            if (lastLoc != null) {
+                                processAndSendLocation(lastLoc);
+                            }
+                        });
+                    }
+                });
+    }
+
+    // Hem taze hem yedek konum için süreyi ayarlayan ortak yardımcı fonksiyon
+    private void processAndSendLocation(Location location) {
+        sendLocationToServer(location);
+
+        float speedKmh = location.getSpeed() * 3.6f;
+        if (speedKmh > 3.0f) {
+            currentInterval = 10000; // Hareketliyken 10 sn
+        } else {
+            currentInterval = 120000; // Sabitken 2 dk
+        }
+    }
+
 
     // 🔋 Pil Yüzdesini Okuma Fonksiyonu
     private int getBatteryLevel() {
@@ -116,7 +143,8 @@ public class TrackerService extends Service implements SensorEventListener {
                 String speed = String.format(java.util.Locale.US, "%.1f", (location.getSpeed() * 3.6));
                 int battery = getBatteryLevel();
 
-                String jsonParam = "{\"user\":\"" + CURRENT_USER + "\", \"lat\":" + location.getLatitude() + ", \"lng\":" + location.getLongitude() + ", \"speed\":\"" + speed + "\", \"battery\":" + battery + "}";
+                String activeUser = getCurrentUser();
+                String jsonParam = "{\"user\":\"" + activeUser + "\", \"lat\":" + location.getLatitude() + ", \"lng\":" + location.getLongitude() + ", \"speed\":\"" + speed + "\", \"battery\":" + battery + "}";
 
                 try (OutputStream os = conn.getOutputStream()) {
                     byte[] input = jsonParam.getBytes(StandardCharsets.UTF_8);
@@ -162,7 +190,8 @@ public class TrackerService extends Service implements SensorEventListener {
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                 conn.setDoOutput(true);
-                String jsonParam = "{\"user\":\"" + CURRENT_USER + "\"}";
+                String activeUser = getCurrentUser();
+                String jsonParam = "{\"user\":\"" + activeUser + "\"}";
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(jsonParam.getBytes(StandardCharsets.UTF_8));
                 }

@@ -8,8 +8,6 @@ import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
-
-// Doğru ve resmi Push Eklentisi importu
 import com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin;
 
 public class MainActivity extends BridgeActivity {
@@ -18,16 +16,21 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Eklentiyi doğru şekilde kaydediyoruz
         registerPlugin(PushNotificationsPlugin.class);
-
-        // Uygulama açıldığında servisi direkt başlatma, önce izni kontrol et!
         checkPermissionsAndStartService();
     }
 
     private void checkPermissionsAndStartService() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        boolean needsLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
+        boolean needsNotification = false;
+
+        // Android 13 ve üzeri için bildirim izni kontrolü
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            needsNotification = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED;
+        }
+
+        // Eğer konum VEYA bildirim izninden biri bile eksikse, izin ekranını çıkar
+        if (needsLocation || needsNotification) {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -41,11 +44,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQ_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startTrackerService();
-            }
-        }
+        startTrackerService(); // İzin verilse de verilmese de servisi başlatmayı dene
     }
 
     private void startTrackerService() {
