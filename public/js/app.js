@@ -859,6 +859,11 @@ function updateMap(myLat, myLng, speed) {
     }
     const group = new L.featureGroup([myMarker, partnerMarker]);
     map.fitBounds(group.getBounds().pad(0.2));
+
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+
   } else {
     myMarker.setLatLng([myLat, myLng]);
     myMarker.setIcon(createProfileIcon(myPhoto, speed));
