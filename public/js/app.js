@@ -820,15 +820,23 @@ function openLocationModal() {
   // Eğer harita daha önce hiç açılmadıysa hemen ilk kurulumunu yap
   if (!map) {
     updateMap(myLastLat, myLastLng, "0.0");
-  } else {
-    setTimeout(() => {
-      map.invalidateSize();
-      if (myMarker && partnerMarker) {
-        const group = new L.featureGroup([myMarker, partnerMarker]);
-        map.fitBounds(group.getBounds().pad(0.3));
-      }
-    }, 100);
   }
+
+  setTimeout(() => {
+    if (map) {
+      map.invalidateSize();
+
+      // Eğer marker'lar tamamsa haritayı üzerlerine odakla
+      if (myMarker && partnerMarker) {
+        try {
+          const group = new L.featureGroup([myMarker, partnerMarker]);
+          map.fitBounds(group.getBounds().pad(0.3));
+        } catch (e) {
+          console.log("Harita zoom hatası:", e);
+        }
+      }
+    }
+  }, 200);
 }
 function closeLocationModal() {
   document.getElementById('location-modal').style.display = 'none';
