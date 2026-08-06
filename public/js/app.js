@@ -1,8 +1,9 @@
 // UYGULAMA AYARLARI
+console.log("🔍 DEBUG: app.js yüklendi. localStorage 'user' değeri:", localStorage.getItem('user'));
+const UserStorage = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.UserStorage : null;
+console.log("🔍 DEBUG: UserStorage eklentisi algılandı mı?", UserStorage ? "EVET" : "HAYIR (NULL)");
 
 const SERVER_URL = "https://bizim-dunyamiz.onrender.com";
-
-const UserStorage = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.UserStorage : null;
 // Capacitor global objesinden eklentiyi alıyoruz (sadece telefondayken çalışır)
 const BackgroundGeolocation = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.BackgroundGeolocation : null;
 
@@ -46,18 +47,24 @@ let lampStates = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("🔍 DEBUG: DOMContentLoaded tetiklendi. Güncel kullanıcı:", currentUser);
 
   if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
     updateThemeIcon(true);
   }
   if (!currentUser) {
+    console.log("🔍 DEBUG: Kullanıcı bulunamadı, giriş ekranı gösteriliyor.");
     document.getElementById('login-screen').style.display = 'flex';
   } else {
+    console.log("🔍 DEBUG: Kullanıcı mevcut, ana sayfa yükleniyor:", currentUser);
     document.getElementById('login-screen').style.display = 'none';
 
     if (UserStorage && typeof UserStorage.setUsername === 'function' && currentUser) {
+      console.log("🔍 DEBUG: Java servisine setUsername gönderiliyor:", currentUser);
       UserStorage.setUsername({ username: currentUser }).catch(e => console.log(e));
+    } else {
+      console.log("⚠️ DEBUG: UserStorage fonksiyonel değil veya kullanıcı yok.");
     }
 
     updateGreeting();
@@ -123,16 +130,21 @@ async function registerDeviceToken(user, token) {
 const messageInput = document.getElementById('message-input');
 
 async function loginAs(selectedUser) {
+  console.log("🔍 DEBUG: loginAs tıklandı, seçilen kullanıcı:", selectedUser);
   localStorage.setItem('user', selectedUser);
 
   if (UserStorage && typeof UserStorage.setUsername === 'function') {
     try {
-      await UserStorage.setUsername({ username: selectedUser });
-      console.log("Kullanıcı adı Java'ya başarıyla aktarıldı:", selectedUser);
+      console.log("🔍 DEBUG: loginAs içinde UserStorage çağrılıyor...");
+      const result = await UserStorage.setUsername({ username: selectedUser });
+      console.log("✅ DEBUG: loginAs UserStorage sonucu:", result);
     } catch (e) {
-      console.error("Java'ya isim aktarılırken hata:", e);
+      console.error("❌ DEBUG: loginAs UserStorage hata fırlattı:", e);
     }
+  } else {
+    console.log("❌ DEBUG: loginAs içinde UserStorage nesnesi bulunamadı!");
   }
+
   window.location.reload();
 }
 
