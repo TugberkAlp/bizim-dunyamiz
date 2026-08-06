@@ -44,25 +44,15 @@ let lampStates = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🔍 DEBUG: DOMContentLoaded tetiklendi. Güncel kullanıcı:", currentUser);
 
   if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
     updateThemeIcon(true);
   }
   if (!currentUser) {
-    console.log("🔍 DEBUG: Kullanıcı bulunamadı, giriş ekranı gösteriliyor.");
     document.getElementById('login-screen').style.display = 'flex';
   } else {
-    console.log("🔍 DEBUG: Kullanıcı mevcut, ana sayfa yükleniyor:", currentUser);
     document.getElementById('login-screen').style.display = 'none';
-
-    if (UserStorage && typeof UserStorage.setUsername === 'function' && currentUser) {
-      console.log("🔍 DEBUG: Java servisine setUsername gönderiliyor:", currentUser);
-      UserStorage.setUsername({ username: currentUser }).catch(e => console.log(e));
-    } else {
-      console.log("⚠️ DEBUG: UserStorage fonksiyonel değil veya kullanıcı yok.");
-    }
 
     updateGreeting();
     loadSpecialDays();
@@ -146,14 +136,29 @@ function selectMood(element, mood) {
 
 async function loadLamps() {
   try {
+
+    console.log("💡 [1] loadLamps fonksiyonu tetiklendi, sunucuya gidiliyor...");
     const response = await fetch(SERVER_URL + '/api/lamps', { cache: 'no-store' });
+
+    console.log("💡 [2] Sunucudan cevap geldi. HTTP Durum Kodu:", response.status);
     const data = await response.json();
 
+    console.log("💡 [3] Veritabanından gelen lamba listesi:", data);
+
+    if (data.length === 0) {
+      console.log("⚠️ Veritabanında kayıtlı hiçbir lamba rengi bulunamadı!");
+    }
+
     data.forEach(lamp => {
+      console.log(`💡 [4] ${lamp.user} kullanıcısı için renk işleniyor: ${lamp.color}`);
+
       lampStates[lamp.user] = { mood: lamp.mood, color: lamp.color };
       const lampElement = document.getElementById(lamp.user + '-lamp');
       if (lampElement) {
         applyMoodToElement(lampElement, lamp.color);
+        console.log(`✅ [5] ${lamp.user} lambası ekranda başarıyla ${lamp.color} rengine boyandı!`);
+      } else {
+        console.error(`❌ HATA: HTML içinde '${lamp.user}-lamp' ID'li element bulunamadı!`);
       }
     });
   } catch (error) {
