@@ -23,6 +23,8 @@ initializeApp({
   credential: cert(serviceAccount)
 });
 
+const { getMessaging } = require("firebase-admin/messaging");
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -107,7 +109,7 @@ console.log("🔍 MESAJ GELDİ! Gönderen:", req.body.sender);
         }
       };
 
-      admin.messaging().send(messagePayload)
+      getMessaging().send(messagePayload)
         .then((response) => {
           console.log('Bildirim başarıyla gönderildi:', response);
         })
