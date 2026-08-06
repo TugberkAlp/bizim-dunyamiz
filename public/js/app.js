@@ -319,6 +319,10 @@ function renderPeriodTracker() {
   today.setHours(0, 0, 0, 0);
 
   const lastStart = new Date(periodData.lastStartDate);
+  if (isNaN(lastStart.getTime())) {
+    document.getElementById('period-text').innerText = "Tarih bilgisi bekleniyor...";
+    return;
+  }
 
   const nextPeriod = new Date(lastStart);
   nextPeriod.setDate(lastStart.getDate() + periodData.cycleLength);
@@ -336,7 +340,7 @@ function renderPeriodTracker() {
   const progressBar = document.getElementById('period-progress-bar');
   const actionArea = document.getElementById('period-action-area');
 
-  progressBar.style.width = `${progressPercent}`;
+  if (progressBar) progressBar.style.width = `${progressPercent}%`;
 
   if (daysLeft <= 0) {
     statusBadge.innerText = "Döngü Başladı / Gecikti";
