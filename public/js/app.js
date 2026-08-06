@@ -99,7 +99,7 @@ function initPushNotifications() {
 // Token'ı sunucuya gönderen fonksiyon
 async function registerDeviceToken(user, token) {
   try {
-    await fetch(SERVER_URL + '/api/save-token', {
+    await fetch(SERVER_URL + '/api/register-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user: user, token: token })

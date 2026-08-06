@@ -7,6 +7,7 @@ const path = require('path');
 const mongoose = require('mongoose'); // Veritabanı yöneticimiz
 const { Server } = require('socket.io');
 const cors = require('cors');
+const User = require('./models/User');
 
 // --- YENİ VE HATASIZ FIREBASED BAŞLATMA YÖNTEMİ ---
 const { initializeApp, cert } = require("firebase-admin/app");
@@ -51,23 +52,6 @@ mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
   .then(() => console.log('✅ MongoDB Veritabanına Başarıyla Bağlanıldı!'))
   .catch((err) => console.log('❌ MongoDB Bağlantı Hatası:', err.message));
 
-
-
-// Kullanıcıların bildirim token'larını tutacağımız yer
-let userTokens = {
-  alpturk: null,
-  elif: null
-};
-
-// Telefon açıldığında token'ı buraya kaydeder
-app.post('/api/save-token', (req, res) => {
-  const { user, token } = req.body;
-  if (user && token) {
-    userTokens[user] = token;
-    console.log(`${user} için FCM Token kaydedildi.`);
-  }
-  res.status(200).send({ success: true });
-});
 
 // --- API ROTALARI ---
 const Message = require('./models/Message')
@@ -268,7 +252,7 @@ io.on('connection', (socket) => {
   });
 });
 
-app.post('api/register-token', async (req, res) => {
+app.post('/api/register-token', async (req, res) => {
   try {
     const { user, token } = req.body;
 
@@ -277,7 +261,7 @@ app.post('api/register-token', async (req, res) => {
       { fcmToken: token },
       { upsert: true, new: true }
     );
-    console.log(`${user} için FCM Token veritabanına kalıcı olarak kaydedildi.`);
+    console.log(`✅ ${user} için FCM Token veritabanına kalıcı olarak kaydedildi.`);
     res.json({ success: true });
   } catch (error) {
     console.error("Token kaydetme hatası:", error);
