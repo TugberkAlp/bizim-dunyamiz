@@ -71,9 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadLamps();
     loadLocations();
     initPushNotifications();
-
-    applyMoodToElement(document.getElementById('elif-lamp'), lampStates.elif.color);
-    applyMoodToElement(document.getElementById('alpturk-lamp'), lampStates.alpturk.color);
   }
 });
 
@@ -149,7 +146,7 @@ function selectMood(element, mood) {
 
 async function loadLamps() {
   try {
-    const response = await fetch(SERVER_URL + '/api/lamps');
+    const response = await fetch(SERVER_URL + '/api/lamps', { cache: 'no-store' });
     const data = await response.json();
 
     data.forEach(lamp => {
