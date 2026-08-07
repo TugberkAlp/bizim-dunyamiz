@@ -420,8 +420,8 @@ app.post('/api/register-token', async (req, res) => {
 app.post('/api/pet-chat', async (req, res) => {
   try {
     const { sender, message } = req.body;
-    
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const parentName = sender === 'alpturk' ? 'Alptürk (Baban)' : 'Elif (Annen)';
     const prompt = `
     Senin adın Galaksi. Sen Alptürk ve Elif'in ortak sanal kedisisin. İkisini de çok seviyorsun.
