@@ -8,6 +8,7 @@ const mongoose = require('mongoose'); // Veritabanı yöneticimiz
 const { Server } = require('socket.io');
 const cors = require('cors');
 const User = require('./models/User');
+const State = require('./models/State');
 
 // --- YENİ VE HATASIZ FIREBASED BAŞLATMA YÖNTEMİ ---
 const { initializeApp, cert } = require("firebase-admin/app");
@@ -57,6 +58,31 @@ const userStates = {
   alpturk: { isAtWork: false, isAtHome: false, isNearPartner: false },
   elif: { isAtWork: false, isAtHome: false, isNearPartner: false }
 };
+
+async function loadStatesFromDB() {
+  try {
+    const states = await State.find();
+    states.forEach(s => {
+      if(userStates[s.user]) {
+        userStates[s.user].isAtWork = s.isAtWork;
+        userStates[s.user].isAtHome = s.isAtHome;
+        userStates[s.user].isNearPartner = s.isNearPartner;
+      }
+    });
+    console.log("Geofence hafızası veritabanına başarıyla yüklendi.");
+  } catch (error) {
+    console.log("Hafıza yüklenemedi", err);
+  }
+}
+loadStatesFromDB();
+
+async function updateStateInDB(username) {
+  await UserStateDB.findOneAndUpdate(
+    { user: username },
+    userStates[username],
+    { upsert: true }
+  );
+}
 
 const LOCATIONS = {
   alpturk: {
@@ -263,18 +289,22 @@ app.post('/api/locations', async (req, res) => {
       // 1. İŞYERİ KONTROLÜ (Yarıçap 200m giriş, 300m çıkış)
       if (distToWork < 0.2 && !myState.isAtWork) {
         myState.isAtWork = true;
+        updateStateInDB(currentUser);
         sendSystemNotification(actualPartner, "📍 İşyerine Vardı!", `${prettyName} güvenle işe ulaştı 💼.`);
-      } else if (distToWork > 0.3 && myState.isAtWork) {
+      } else if (distToWork > 0.5 && myState.isAtWork) {
         myState.isAtWork = false;
+        updateStateInDB(currentUser);
         sendSystemNotification(actualPartner, "🏃‍♂️ İşten Çıktı!", `${prettyName} işten ayrıldı, yola çıktı.`);
       }
 
       // 2. EV KONTROLÜ (Yarıçap 200m giriş, 300m çıkış)
       if (distToHome < 0.2 && !myState.isAtHome) {
         myState.isAtHome = true;
+        updateStateInDB(currentUser);
         sendSystemNotification(actualPartner, "🏠 Eve Vardı!", `${prettyName} güvenle evine ulaştı 💖.`);
-      } else if (distToHome > 0.3 && myState.isAtHome) {
+      } else if (distToHome > 0.5 && myState.isAtHome) {
         myState.isAtHome = false;
+        updateStateInDB(currentUser);
         sendSystemNotification(actualPartner, "🚶‍♂️ Evden Çıktı!", `${prettyName} evden ayrıldı.`);
       }
 
@@ -285,6 +315,7 @@ app.post('/api/locations', async (req, res) => {
 
         if (distToPartner < 1.0 && !myState.isNearPartner) {
           myState.isNearPartner = true;
+          updateStateInDB(currentUser);
           userStates[actualPartner].isNearPartner = true; // Spam'ı önlemek için iki tarafı da kitliyoruz
 
           sendSystemNotification(actualPartner, "💖 Yaklaşıyor!", "Sevgilin sana 1 kilometreden daha yakın! Heyecanlanma zamanı 🥰");
@@ -292,6 +323,7 @@ app.post('/api/locations', async (req, res) => {
         }
         else if (distToPartner > 1.2 && myState.isNearPartner) {
           myState.isNearPartner = false;
+          updateStateInDB(currentUser);
           userStates[actualPartner].isNearPartner = false;
         }
       }
