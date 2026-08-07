@@ -841,20 +841,37 @@ function closePet() {
 }
 
 function feedPet() {
-  const pet = document.getElementById('the-pet');
+  const petImg = document.getElementById('pet-image');
   const msg = document.getElementById('pet-message');
 
-  pet.style.transform = 'scale(1.2) translateY(-20px)';
-  msg.innerText = "Yummy! Yemek çok güzel";
+  // Yemek yerken kedi hafifçe zıplar ve büyür
+  petImg.style.transform = 'scale(1.2) translateY(-15px)';
+  msg.innerText = "Yummy! Yemek çok güzel 🍗";
 
+  // Yarım saniye sonra eski haline döner
   setTimeout(() => {
-    pet.style.transform = '';
-  }, 300);
+    petImg.style.transform = 'scale(1) translateY(0)';
+  }, 400);
 }
 
 function lovePet() {
   const msg = document.getElementById('pet-message');
   msg.innerText = "Pırrrrr... Seni çok seviyorum! 💖🐾";
+
+  // Kedinin kapsayıcısını seç
+  const petContainer = document.getElementById('the-pet');
+
+  // Yeni bir kalp elementi oluştur ve uçur
+  const heart = document.createElement('div');
+  heart.innerHTML = '💖';
+  heart.className = 'floating-heart';
+
+  petContainer.appendChild(heart);
+
+  // Animasyon bitince kalbi HTML'den temizle
+  setTimeout(() => {
+    heart.remove();
+  }, 1000);
 }
 
 function openLocationModal() {

@@ -1,4 +1,27 @@
 /* --- SANAL BEBEK EKRANI --- */
+
+@keyframes floatHeart {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -60px) scale(1.5);
+  }
+}
+
+.floating-heart {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  font-size: 24px;
+  pointer-events: none;
+  animation: floatHeart 1s ease-out forwards;
+  z-index: 10;
+}
+
 .pet-status-container {
   background: var(--card-bg);
   padding: 15px;
