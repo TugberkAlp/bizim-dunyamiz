@@ -93,6 +93,7 @@ function initPushNotifications() {
   PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
     console.log('Bildirime tıklandı: ', notification);
     switchTab('notes');
+    loadMessages();
   });
 }
 
@@ -196,9 +197,10 @@ function switchTab(tabName, element) {
     loadSpecialDays();
   } else if (tabName === 'notes') {
     document.getElementById('notes-page').style.display = 'flex';
+    loadMessages();
     const chatBox = document.getElementById('chat-box');
     if (chatBox) {
-      chatBox.scrollTop = chatBox.scrollHeight;
+      setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
     }
   }
 }
