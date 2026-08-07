@@ -77,7 +77,7 @@ async function loadStatesFromDB() {
 loadStatesFromDB();
 
 async function updateStateInDB(username) {
-  await UserStateDB.findOneAndUpdate(
+  await State.findOneAndUpdate(
     { user: username },
     userStates[username],
     { upsert: true }
