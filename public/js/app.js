@@ -14,8 +14,8 @@ let periodData = {
 };
 
 let partnerLocation = { lat: 0, lng: 0, speed: "0.0" };
-let myLastLat = currentUser === 'alpturk' ? 40.7434 : 40.7177;
-let myLastLng = currentUser === 'alpturk' ? 30.0168 : 29.7979;
+let myLastLat = currentUser === 'alpturk' ? 40.743594 : 40.717683;
+let myLastLng = currentUser === 'alpturk' ? 30.016323 : 29.797951;
 
 // HARİTA DEĞİŞKENLERİ
 let map = null;
@@ -28,10 +28,10 @@ const photoElif = 'assets/images/elif.png';
 let myPhoto = currentUser === 'alpturk' ? photoAlpturk : photoElif;
 let partnerPhoto = currentUser === 'alpturk' ? photoElif : photoAlpturk;
 
-const alpturkHomeCoords = [40.7434, 30.0168];
-const elifHomeCoords = [40.7177, 29.7979];
-const alpturkWorkCoords = [40.7330, 30.0632];
-const elifWorkCoords = [40.7737, 29.9799];
+const alpturkHomeCoords = [40.743594, 30.016323];
+const elifHomeCoords = [40.717683, 29.797951];
+const alpturkWorkCoords = [40.722904, 30.107241];
+const elifWorkCoords = [40.772934, 29.978002];
 
 // Ev için özel pin tasarımı
 const homeIcon = L.divIcon({

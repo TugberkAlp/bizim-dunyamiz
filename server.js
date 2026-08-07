@@ -60,12 +60,12 @@ const userStates = {
 
 const LOCATIONS = {
   alpturk: {
-    home: { lat: 40.7434, lng: 30.0168 },
-    work: { lat: 40.7330, lng: 30.0632 }
+    home: { lat: 40.743594, lng: 30.016323 },
+    work: { lat: 40.722904, lng: 30.107241 }
   },
   elif: {
-    home: { lat: 40.7177, lng: 29.7979 },
-    work: { lat: 40.7737, lng: 29.9799 }
+    home: { lat: 40.717683, lng: 29.797951 },
+    work: { lat: 40.772934, lng: 29.978002 }
   }
 };
 
