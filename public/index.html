@@ -61,8 +61,10 @@
       <!-- Sağ Taraf: Avatarlar ve Minik Mesafe Rozeti -->
       <div class="header-right">
         <div class="profile-pics">
-          <img src="assets/images/alpturk.png" alt="Alptürk" class="profile-pic" style="padding: 0; object-fit: cover; border: 1px solid #ccc;">
-          <img src="assets/images/elif.png" alt="Elif" class="profile-pic" style="padding: 0; object-fit: cover; margin-left: -10px; border: 1px solid #ccc;">
+          <img src="assets/images/alpturk.png" alt="Alptürk" class="profile-pic"
+            style="padding: 0; object-fit: cover; border: 1px solid #ccc;">
+          <img src="assets/images/elif.png" alt="Elif" class="profile-pic"
+            style="padding: 0; object-fit: cover; margin-left: -10px; border: 1px solid #ccc;">
         </div>
 
         <!-- YENİ: Tıklanamaz, Küçük Mesafe Rozeti -->
@@ -245,13 +247,20 @@
         <span class="close-btn" onclick="closeMoodModal()"><i class="fa-solid fa-xmark"></i></span>
         <h3 style="margin-bottom: 15px;">Şu An Nasıl Hissediyorsun? ✨</h3>
         <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-          <button class="btn-small" style="background-color: #F1C40F; color: #333; border: none;" onclick="applyMood('Çok Mutlu', '#F1C40F')">Mutlu 💛</button>
-          <button class="btn-small" style="background-color: #3498DB; color: white; border: none;" onclick="applyMood('Çok Özlemiş', '#3498DB')">Özlemli 💙</button>
-          <button class="btn-small" style="background-color: #E74C3C; color: white; border: none;" onclick="applyMood('Duygusal', '#E74C3C')">Duygusal 💗</button>
-          <button class="btn-small" style="background-color: #7F8C8D; color: white; border: none;" onclick="applyMood('Yorgun', '#7F8C8D')">Yorgun 🤎</button>
-          <button class="btn-small" style="background-color: #E67E22; color: white; border: none;" onclick="applyMood('Heyecanlı', '#E67E22')">Heyecanlı 🧡</button>
-          <button class="btn-small" style="background-color: #900C3F; color: white; border: none;" onclick="applyMood('Biraz Kızgın', '#900C3F')">Kızgın ❤️</button>
-          <button class="btn-small" style="background-color: #9B59B6; color: white; border: none;" onclick="applyMood('Huzurlu', '#9B59B6')">Huzurlu 💜</button>
+          <button class="btn-small" style="background-color: #F1C40F; color: #333; border: none;"
+            onclick="applyMood('Çok Mutlu', '#F1C40F')">Mutlu 💛</button>
+          <button class="btn-small" style="background-color: #3498DB; color: white; border: none;"
+            onclick="applyMood('Çok Özlemiş', '#3498DB')">Özlemli 💙</button>
+          <button class="btn-small" style="background-color: #E74C3C; color: white; border: none;"
+            onclick="applyMood('Duygusal', '#E74C3C')">Duygusal 💗</button>
+          <button class="btn-small" style="background-color: #7F8C8D; color: white; border: none;"
+            onclick="applyMood('Yorgun', '#7F8C8D')">Yorgun 🤎</button>
+          <button class="btn-small" style="background-color: #E67E22; color: white; border: none;"
+            onclick="applyMood('Heyecanlı', '#E67E22')">Heyecanlı 🧡</button>
+          <button class="btn-small" style="background-color: #900C3F; color: white; border: none;"
+            onclick="applyMood('Biraz Kızgın', '#900C3F')">Kızgın ❤️</button>
+          <button class="btn-small" style="background-color: #9B59B6; color: white; border: none;"
+            onclick="applyMood('Huzurlu', '#9B59B6')">Huzurlu 💜</button>
         </div>
       </div>
     </div>
@@ -285,6 +294,15 @@
           </div>
           <div class="msg-avatar">🧑🏻</div>
         </div>
+      </div>
+
+      <div id="reply-preview"
+        style="display: none; background: rgba(0,0,0,0.05); padding: 8px 12px; border-left: 4px solid var(--primary); font-size: 12px; margin-bottom: 5px; border-radius: 4px; position: relative;">
+        <span id="reply-sender" style="font-weight: bold; color: var(--primary); display: block;"></span>
+        <span id="reply-text" style="color: var(--text-dark); opacity: 0.8;"></span>
+        <button type="button" onclick="cancelReply()"
+          style="position: absolute; right: 10px; top: 10px; background: none; border: none; color: #999; cursor: pointer;"><i
+            class="fa-solid fa-times"></i></button>
       </div>
 
       <!-- Mesaj Yazma Alanı -->

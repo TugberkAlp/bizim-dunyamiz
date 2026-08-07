@@ -1,14 +1,11 @@
 const mongoose = require('mongoose');
 
 const messageSchema = new mongoose.Schema({
-  sender: {
-    type: String,
-    required: true
-  },
-  text: {
-    type: String,
-    required: true
-  },
+  sender: { type: String, required: true },
+  receiver: {type: String, required: true},
+  text: { type: String, required: true },
+  quotedText: { type: String, default: null }, // Yeni
+  quotedSender: { type: String, default: null }, // Yeni
   timestamp: {
     type: Date,
     default: Date.now

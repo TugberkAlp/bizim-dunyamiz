@@ -461,13 +461,26 @@ async function loadMessages() {
         lastDateString = msgDateString;
       }
 
+      let quotedHTML = '';
+      if (msg.quotedText) {
+        quotedHTML = `
+          <div style="background: rgba(0,0,0,0.06); border-left: 3px solid var(--primary); padding: 4px 8px; margin-bottom: 6px; border-radius: 4px; font-size: 11px;">
+            <span style="font-weight: bold; color: var(--primary); display: block;">${msg.quotedSender}</span>
+            <span style="color: var(--text-dark); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 180px;">${msg.quotedText}</span>
+          </div>
+        `;
+      }
+
       const tickHTML = isSentByMe ? `<i class="fa-solid fa-check msg-tick"></i>` : '';
       const photoHTML = `<img src="${avatarUrl}" alt="Profile" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid ${isSentByMe ? 'var(--primary)' : '#e0e0e0'}; flex-shrink: 0;">`;
 
+      const safeText = (msg.text || "").replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
       yeniHTML += `
-      <div class="message-bubble ${bubbleClass}" style="animation: popIn 0.3s ease-out; display: flex; align-items: flex-end; gap: 8px;">
+      <div class="message-bubble ${bubbleClass}" onclick="quoteMessage('${msg.sender}', '${safeText}')" style="cursor: pointer; animation: popIn 0.3s ease-out; display: flex; align-items: flex-end; gap: 8px;" title="Yanıtlamak için tıkla">
         ${!isSentByMe ? photoHTML : ''}
         <div class="msg-content">
+          ${quotedHTML} 
           <p>${msg.text || ''}</p>
           <span class="msg-time">
             ${timeString}
@@ -491,6 +504,26 @@ async function loadMessages() {
   }
 }
 
+let currentQuotedText = null;
+let currentQuotedSender = null;
+
+function quoteMessage(sender, text) {
+  currentQuotedText = text;
+  currentQuotedSender = sender === 'alpturk' ? 'Alptürk' : 'Elif';
+
+  document.getElementById('reply-preview').style.display = 'block';
+  document.getElementById('reply-sender').innerText = currentQuotedSender;
+  document.getElementById('reply-text').innerText = text;
+
+  document.getElementById('message-input').focus(); // Otomatik klavyeyi aç
+}
+
+function cancelReply() {
+  currentQuotedText = null;
+  currentQuotedSender = null;
+  document.getElementById('reply-preview').style.display = 'none';
+}
+
 async function sendMessage() {
   const inputField = document.getElementById('message-input');
 
@@ -509,12 +542,15 @@ async function sendMessage() {
       body: JSON.stringify({
         sender: currentUser,
         receiver: receiverUser,
-        text: messageText
+        text: messageText,
+        quotedText: currentQuotedText,
+        quotedSender: currentQuotedSender
       })
     });
 
     if (response.ok) {
       inputField.value = '';
+      cancelReply();
       loadMessages();
       socket.emit('chatMessageSent');
     } else {
