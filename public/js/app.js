@@ -897,6 +897,25 @@ function createProfileIcon(photoUrl, speed) {
   });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  const msgInput = document.getElementById('message-input');
+
+  if (msgInput) {
+    msgInput.addEventListener('focus', () => {
+      setTimeout(() => {
+        const chatBox = document.getElementById('chat-box');
+        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+      }, 300);
+    });
+  }
+
+  window.addEventListener('resize', () => {
+    const chatBox = document.getElementById('chat-box');
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+  });
+});
+
+
 socket.on('updatePartnerLocation', (data) => {
   if (data.user === currentUser) {
     myLastLat = data.lat;
