@@ -11,11 +11,8 @@ const User = require('./models/User');
 const State = require('./models/State');
 
 // --- KEDİ AI ---
-
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
+const { Groq } = require('groq-sdk');
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // --- YENİ VE HATASIZ FIREBASED BAŞLATMA YÖNTEMİ ---
 const { initializeApp, cert } = require("firebase-admin/app");
@@ -420,26 +417,34 @@ app.post('/api/register-token', async (req, res) => {
 app.post('/api/pet-chat', async (req, res) => {
   try {
     const { sender, message } = req.body;
-
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const parentName = sender === 'alpturk' ? 'Alptürk (Baban)' : 'Elif (Annen)';
-    const prompt = `
-    Senin adın Galaksi. Sen Alptürk ve Elif'in ortak sanal kedisisin. İkisini de çok seviyorsun.
-    Zaman zaman onların Project Zomboid oynarken karakterleriyle loot yapmalarını mırıldayarak izliyorsun.
-    Onlara her zaman şımarık, sevimli ve tam bir kedi gibi (araya miyavlamalar, mırıldanmalar, pati emojileri katarak) cevap ver.
-    Cevapların çok uzun olmasın, mobil uygulama ekranında konuşma baloncuğuna sığacak kadar kısa ve tatlı olsun.
-    
-    Şu an sana yazan kişi: ${parentName}.
-    Onun sana yazdığı mesaj: "${message}"
-    Kedice cevabın:`;
 
-    const result = await model.generateContent(prompt);
-    const reply = result.response.text();
+    // Groq'a özel mesaj formatı (System prompt ile karakter veriyoruz)
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile", // Groq'un en akıllı ve hızlı modellerinden biri
+      messages: [
+        {
+          role: "system",
+          content: `Senin adın Galaksi. Sen Alptürk ve Elif'in ortak sanal kedisisin. İkisini de çok seviyorsun.
+          Zaman zaman onların Project Zomboid oynarken "hırsız" karakterleriyle loot yapmalarını mırıldayarak izliyorsun.
+          Onlara her zaman şımarık, sevimli ve tam bir kedi gibi (araya miyavlamalar, mırıldanmalar, pati emojileri katarak) cevap ver.
+          Cevapların çok uzun olmasın, mobil uygulama ekranında konuşma baloncuğuna sığacak kadar kısa ve tatlı olsun.`
+        },
+        {
+          role: "user",
+          content: `Şu an sana yazan kişi: ${parentName}. Onun sana yazdığı mesaj: "${message}"`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 150
+    });
 
+    const reply = completion.choices[0]?.message?.content || "Miyav! 🐾";
     res.json({ reply: reply });
+
   } catch (error) {
-    console.error("Yapay zeka yanıt vermedi:", error);
-    res.status(500).json({ reply: "Miyav... Sanırım şu an biraz uykum var, sonra tekrar konuşalım! 🐾" })
+    console.error("Groq yapay zeka hatası:", error);
+    res.status(500).json({ reply: "Miyav... Uykum açılmadı, sonra dene! 😿" });
   }
 });
 
