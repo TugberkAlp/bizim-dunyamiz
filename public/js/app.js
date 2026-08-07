@@ -463,13 +463,22 @@ async function loadMessages() {
 
       let quotedHTML = '';
       if (msg.quotedText) {
-        const quoteBorderColor = isSentByMe ? '#ffffff' : 'var(--primary)';
-        const quoteNameColor = isSentByMe ? '#ffffff' : 'var(--primary)';
-        
+
+        // Alıntılanan mesajı "ben" mi attım, "o" mu attı kontrolü
+        // (Ekran görüntüsündeki "Siz" mantığı)
+        const isMyQuote = (msg.quotedSender === 'Alptürk' && currentUser === 'alpturk') ||
+          (msg.quotedSender === 'Elif' && currentUser === 'elif');
+
+        const displayName = isMyQuote ? 'Siz' : msg.quotedSender;
+
+        // Kendi mesajımızsa ekran görüntüsündeki o tatlı lila/mor rengi, 
+        // Elif'in mesajıysa temanın ana rengi
+        const quoteColor = isMyQuote ? '#b39ddb' : 'var(--primary)';
+
         quotedHTML = `
-          <div style="background-color: rgba(0, 0, 0, 0.15); border-left: 4px solid ${quoteBorderColor}; padding: 6px 10px; margin-bottom: 8px; border-radius: 6px; font-size: 11.5px; text-align: left; line-height: 1.3;">
-            <span style="font-weight: 800; color: ${quoteNameColor}; display: block; margin-bottom: 3px;">${msg.quotedSender}</span>
-            <span style="opacity: 0.9; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic;">${msg.quotedText}</span>
+          <div style="background-color: rgba(255, 255, 255, 0.08); border-radius: 4px; border-left: 4px solid ${quoteColor}; padding: 6px 10px; margin-bottom: 6px; text-align: left; display: flex; flex-direction: column; min-width: 120px;">
+            <span style="font-weight: 600; font-size: 13px; color: ${quoteColor}; margin-bottom: 2px;">${displayName}</span>
+            <span style="font-size: 12.5px; color: rgba(255, 255, 255, 0.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;">${msg.quotedText}</span>
           </div>
         `;
       }
