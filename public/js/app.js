@@ -30,10 +30,21 @@ let partnerPhoto = currentUser === 'alpturk' ? photoElif : photoAlpturk;
 
 const alpturkHomeCoords = [40.7434, 30.0168];
 const elifHomeCoords = [40.7177, 29.7979];
+const alpturkWorkCoords = [40.7330, 30.0632];
+const elifWorkCoords = [40.7737, 29.9799];
 
+// Ev için özel pin tasarımı
 const homeIcon = L.divIcon({
   className: 'custom-icon-wrapper',
   html: `<div class="fixed-home-pin"><i class="fa-solid fa-house"></i></div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16]
+});
+
+// İşyeri için özel pin tasarımı (Çanta ikonu)
+const workIcon = L.divIcon({
+  className: 'custom-icon-wrapper',
+  html: `<div class="fixed-home-pin" style="background: var(--accent);"><i class="fa-solid fa-briefcase"></i></div>`,
   iconSize: [32, 32],
   iconAnchor: [16, 16]
 });
@@ -687,7 +698,7 @@ async function loadLocations() {
     const response = await fetch(SERVER_URL + '/api/locations');
     const data = await response.json();
 
-    const actualPartner = currentUser === 'alpturk' ? 'elif': 'alpturk';
+    const actualPartner = currentUser === 'alpturk' ? 'elif' : 'alpturk';
 
     data.forEach(loc => {
       if (loc.user === actualPartner) {
@@ -705,7 +716,7 @@ async function loadLocations() {
             }
           }
         }
-      } else if(loc.user === currentUser) {
+      } else if (loc.user === currentUser) {
         if (loc.lat !== 0 && loc.lng !== 0) {
           myLastLat = loc.lat;
           myLastLng = loc.lng;
@@ -842,6 +853,8 @@ function updateMap(myLat, myLng, speed) {
 
     L.marker(alpturkHomeCoords, { icon: homeIcon }).bindPopup("Alptürk'ün Evi 🏠").addTo(map);
     L.marker(elifHomeCoords, { icon: homeIcon }).bindPopup("Elif'in Evi 🏠").addTo(map);
+    L.marker(alpturkWorkCoords, { icon: workIcon }).bindPopup("Alptürk'ün İşyeri 💼").addTo(map);
+    L.marker(elifWorkCoords, { icon: workIcon }).bindPopup("Elif'in İşyeri 💼").addTo(map);
 
     myMarker = L.marker([myLat, myLng], { icon: createProfileIcon(myPhoto, speed) }).addTo(map);
     const markersList = [myMarker];
