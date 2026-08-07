@@ -463,10 +463,13 @@ async function loadMessages() {
 
       let quotedHTML = '';
       if (msg.quotedText) {
+        const quoteBorderColor = isSentByMe ? '#ffffff' : 'var(--primary)';
+        const quoteNameColor = isSentByMe ? '#ffffff' : 'var(--primary)';
+        
         quotedHTML = `
-          <div style="background: rgba(0,0,0,0.06); border-left: 3px solid var(--primary); padding: 4px 8px; margin-bottom: 6px; border-radius: 4px; font-size: 11px;">
-            <span style="font-weight: bold; color: var(--primary); display: block;">${msg.quotedSender}</span>
-            <span style="color: var(--text-dark); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 180px;">${msg.quotedText}</span>
+          <div style="background-color: rgba(0, 0, 0, 0.15); border-left: 4px solid ${quoteBorderColor}; padding: 6px 10px; margin-bottom: 8px; border-radius: 6px; font-size: 11.5px; text-align: left; line-height: 1.3;">
+            <span style="font-weight: 800; color: ${quoteNameColor}; display: block; margin-bottom: 3px;">${msg.quotedSender}</span>
+            <span style="opacity: 0.9; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic;">${msg.quotedText}</span>
           </div>
         `;
       }
