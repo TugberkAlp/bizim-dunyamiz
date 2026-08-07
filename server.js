@@ -297,7 +297,7 @@ app.post('/api/locations', async (req, res) => {
         myState.isAtWork = true;
         updateStateInDB(currentUser);
         sendSystemNotification(actualPartner, "📍 İşyerine Vardı!", `${prettyName} güvenle işe ulaştı 💼.`);
-      } else if (distToWork > 0.5 && myState.isAtWork) {
+      } else if (distToWork > 0.3 && myState.isAtWork) {
         myState.isAtWork = false;
         updateStateInDB(currentUser);
         sendSystemNotification(actualPartner, "🏃‍♂️ İşten Çıktı!", `${prettyName} işten ayrıldı, yola çıktı.`);
@@ -308,7 +308,7 @@ app.post('/api/locations', async (req, res) => {
         myState.isAtHome = true;
         updateStateInDB(currentUser);
         sendSystemNotification(actualPartner, "🏠 Eve Vardı!", `${prettyName} güvenle evine ulaştı 💖.`);
-      } else if (distToHome > 0.5 && myState.isAtHome) {
+      } else if (distToHome > 0.3 && myState.isAtHome) {
         myState.isAtHome = false;
         updateStateInDB(currentUser);
         sendSystemNotification(actualPartner, "🚶‍♂️ Evden Çıktı!", `${prettyName} evden ayrıldı.`);
