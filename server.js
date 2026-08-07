@@ -53,6 +53,47 @@ mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
   .catch((err) => console.log('❌ MongoDB Bağlantı Hatası:', err.message));
 
 
+const userStates = {
+  alpturk: { isAtWork: false, isAtHome: false, isNearPartner: false },
+  elif: { isAtWork: false, isAtHome: false, isNearPartner: false }
+};
+
+const LOCATIONS = {
+  alpturk: {
+    home: { lat: 40.7434, lng: 30.0168 },
+    work: { lat: 40.7330, lng: 30.0632 }
+  },
+  elif: {
+    home: { lat: 40.7177, lng: 29.7979 },
+    work: { lat: 40.7737, lng: 29.9799 }
+  }
+};
+
+// Mesafe Hesaplayıcı (KM Cinsinden)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+// Otomatik Sistem Bildirimi Gönderici
+async function sendSystemNotification(receiver, title, body) {
+  try {
+    const targetUser = await User.findOne({ username: receiver });
+    if (targetUser && targetUser.fcmToken) {
+      await getMessaging().send({
+        token: targetUser.fcmToken,
+        notification: { title, body }
+      });
+      console.log(`🤖 Sistem bildirimi gönderildi -> ${receiver}: ${title}`);
+    }
+  } catch (err) {
+    console.log("Sistem bildirimi hatası:", err);
+  }
+}
+
 // --- API ROTALARI ---
 const Message = require('./models/Message')
 
@@ -197,7 +238,6 @@ app.get('/api/locations', async (req, res) => {
 
 app.post('/api/locations', async (req, res) => {
   try {
-
     if (req.body.lat === 0 || req.body.lng === 0) {
       return res.status(200).json({ message: "Geçersiz/Hatalı konum yoksayıldı, gerçek konum korundu." });
     }
@@ -208,6 +248,55 @@ app.post('/api/locations', async (req, res) => {
       { upsert: true, new: true }
     );
     io.emit('updatePartnerLocation', req.body);
+
+    const currentUser = req.body.user;
+
+    if (currentUser === 'alpturk' || currentUser === 'elif') {
+      const actualPartner = currentUser === 'alpturk' ? 'elif' : 'alpturk';
+      const myState = userStates[currentUser];
+      const myPlaces = LOCATIONS[currentUser];
+      const prettyName = currentUser === 'alpturk' ? 'Alptürk' : 'Elif';
+
+      const distToWork = calculateDistance(req.body.lat, req.body.lng, myPlaces.work.lat, myPlaces.work.lng);
+      const distToHome = calculateDistance(req.body.lat, req.body.lng, myPlaces.home.lat, myPlaces.home.lng);
+
+      // 1. İŞYERİ KONTROLÜ (Yarıçap 200m giriş, 300m çıkış)
+      if (distToWork < 0.2 && !myState.isAtWork) {
+        myState.isAtWork = true;
+        sendSystemNotification(actualPartner, "📍 İşyerine Vardı!", `${prettyName} güvenle işe ulaştı 💼.`);
+      } else if (distToWork > 0.3 && myState.isAtWork) {
+        myState.isAtWork = false;
+        sendSystemNotification(actualPartner, "🏃‍♂️ İşten Çıktı!", `${prettyName} işten ayrıldı, yola çıktı.`);
+      }
+
+      // 2. EV KONTROLÜ (Yarıçap 200m giriş, 300m çıkış)
+      if (distToHome < 0.2 && !myState.isAtHome) {
+        myState.isAtHome = true;
+        sendSystemNotification(actualPartner, "🏠 Eve Vardı!", `${prettyName} güvenle evine ulaştı 💖.`);
+      } else if (distToHome > 0.3 && myState.isAtHome) {
+        myState.isAtHome = false;
+        sendSystemNotification(actualPartner, "🚶‍♂️ Evden Çıktı!", `${prettyName} evden ayrıldı.`);
+      }
+
+      // 3. PARTNERE YAKINLIK KONTROLÜ (1 km)
+      const partnerLoc = await Location.findOne({ user: actualPartner });
+      if (partnerLoc && partnerLoc.lat !== 0) {
+        const distToPartner = calculateDistance(req.body.lat, req.body.lng, partnerLoc.lat, partnerLoc.lng);
+
+        if (distToPartner < 1.0 && !myState.isNearPartner) {
+          myState.isNearPartner = true;
+          userStates[actualPartner].isNearPartner = true; // Spam'ı önlemek için iki tarafı da kitliyoruz
+
+          sendSystemNotification(actualPartner, "💖 Yaklaşıyor!", "Sevgilin sana 1 kilometreden daha yakın! Heyecanlanma zamanı 🥰");
+          sendSystemNotification(currentUser, "💖 Yaklaşıyorsun!", "Sevgiline 1 kilometreden daha yakınsın! 🥰");
+        }
+        else if (distToPartner > 1.2 && myState.isNearPartner) {
+          myState.isNearPartner = false;
+          userStates[actualPartner].isNearPartner = false;
+        }
+      }
+    }
+
     res.status(201).json(updatedLocation);
   } catch (error) {
     console.log("Konum HHTP ile kaydedilemedi:", error);
