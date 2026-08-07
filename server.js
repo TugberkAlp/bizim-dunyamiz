@@ -63,7 +63,7 @@ async function loadStatesFromDB() {
   try {
     const states = await State.find();
     states.forEach(s => {
-      if(userStates[s.user]) {
+      if (userStates[s.user]) {
         userStates[s.user].isAtWork = s.isAtWork;
         userStates[s.user].isAtHome = s.isAtHome;
         userStates[s.user].isNearPartner = s.isNearPartner;
@@ -135,10 +135,16 @@ app.get('/api/messages', async (req, res) => {
 
 app.post('/api/messages', async (req, res) => {
   try {
-    const { sender, receiver, text } = req.body;
+    const { sender, receiver, text, quotedText, quotedSender } = req.body;
 
     // 1. ÖNEMLİ: Önce mesajı MongoDB'ye kesin olarak kaydedelim (Mesaj kaybolmasın)
-    const newMessage = new Message({ sender, text });
+    const newMessage = new Message({
+      sender,
+      receiver,
+      text,
+      quotedText: quotedText || null,
+      quotedSender: quotedSender || null
+    });
     await newMessage.save();
 
     // 2. Alıcının FCM token'ını veritabanından bulmaya çalışalım
