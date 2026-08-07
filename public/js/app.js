@@ -14,8 +14,8 @@ let periodData = {
 };
 
 let partnerLocation = { lat: 0, lng: 0, speed: "0.0" };
-let myLastLat = 40.7434;
-let myLastLng = 30.0168;
+let myLastLat = currentUser === 'alpturk' ? 40.7434 : 40.7177;
+let myLastLng = currentUser === 'alpturk' ? 30.0168 : 29.7979;
 
 // HARİTA DEĞİŞKENLERİ
 let map = null;
@@ -685,8 +685,10 @@ async function loadLocations() {
     const response = await fetch(SERVER_URL + '/api/locations');
     const data = await response.json();
 
+    const actualPartner = currentUser === 'alpturk' ? 'elif': 'alpturk';
+
     data.forEach(loc => {
-      if (loc.user !== currentUser) {
+      if (loc.user === actualPartner) {
         if (loc.lat !== 0 && loc.lng !== 0) {
           partnerLocation.lat = loc.lat;
           partnerLocation.lng = loc.lng;
@@ -701,7 +703,7 @@ async function loadLocations() {
             }
           }
         }
-      } else {
+      } else if(loc.user === currentUser) {
         if (loc.lat !== 0 && loc.lng !== 0) {
           myLastLat = loc.lat;
           myLastLng = loc.lng;

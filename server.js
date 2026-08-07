@@ -197,6 +197,11 @@ app.get('/api/locations', async (req, res) => {
 
 app.post('/api/locations', async (req, res) => {
   try {
+
+    if (req.body.lat === 0 || req.body.lng === 0) {
+      return res.status(200).json({ message: "Geçersiz/Hatalı konum yoksayıldı, gerçek konum korundu." });
+    }
+
     const updatedLocation = await Location.findOneAndUpdate(
       { user: req.body.user },
       { lat: req.body.lat, lng: req.body.lng, speed: req.body.speed },
@@ -223,6 +228,9 @@ io.on('connection', (socket) => {
 
   socket.on('sendLocation', async (data) => {
     try {
+
+      if (data.lat === 0 || data.lng === 0) return;
+
       await Location.findOneAndUpdate(
         { user: data.user },
         { lat: data.lat, lng: data.lng, speed: data.speed },
