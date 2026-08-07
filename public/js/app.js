@@ -1026,3 +1026,34 @@ socket.on('updateLampColor', (data) => {
   const lampElement = document.getElementById(data.user + '-lamp');
   if (lampElement) applyMoodToElement(lampElement, data.color);
 });
+
+async function sendMessageToPet() {
+  const petMessageInput = document.getElementById('pet-message-input');
+  const petMessage = document.getElementById('pet-message');
+
+  if (!petMessageInput) return;
+
+  const userText = petMessageInput.value.trim();
+  if(userText === '') return;
+
+  petMessageInput.value = '';
+  petMessage.innerText = 'Galaksi düşünüyor...';
+
+  try {
+    const response = await fetch(SERVER_URL + '/api/pet-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sender: currentUser, message: userText })
+    });
+    const data = await response.json();
+    if(data.reply) {
+      petMessage.innerText = data.reply;
+    } else {
+      petMessage.innerText = "Miyav, bağlantım koptu sanırım! ";
+    }
+  } catch (error) {
+    console.log("Kedi mesajında hata:", error);
+    petMessage.innerText = "Miyav, bir şeyler ters gitti! ";
+  }
+
+}
