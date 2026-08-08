@@ -13,6 +13,7 @@ const State = require('./models/State');
 // --- KEDİ AI ---
 const { Groq } = require('groq-sdk');
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const PetMessage = require('./models/PetMessage');
 
 // --- YENİ VE HATASIZ FIREBASED BAŞLATMA YÖNTEMİ ---
 const { initializeApp, cert } = require("firebase-admin/app");
@@ -414,33 +415,59 @@ app.post('/api/register-token', async (req, res) => {
   }
 });
 
+// Kedinin geçmiş mesajlarını getirme rotası
+app.get('/api/pet-chat/history', async (req, res) => {
+  try {
+    // Son 50 mesajı eskiden yeniye doğru sıralayarak getir
+    const messages = await PetMessage.find().sort({ timestamp: 1 }).limit(50);
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: "Geçmiş getirilemedi" });
+  }
+});
+
 app.post('/api/pet-chat', async (req, res) => {
   try {
     const { sender, message } = req.body;
     const parentName = sender === 'alpturk' ? 'Alptürk (Baban)' : 'Elif (Annen)';
 
-    // Groq'a özel mesaj formatı (System prompt ile karakter veriyoruz)
+    const userMessage = new PetMessage({ sender: sender, content: message });
+    await userMessage.save();
+
+    const history = await PetMessage.find().sort({ timestamp: -1 }).limit(10);
+    history.reverse();
+
+    const messagesForGroq = [
+      {
+        role: "system",
+        content: `Senin adın Galaksi. Sen Alptürk ve Elif'in ortak sanal kedisisin. Tam bir zeki, çakal ve ortalığı karıştıran, laf sokmayı seven bir kedisin. 
+        İkisi arasındaki atışmalarda asla politik ve iyimser olma; taraf tut, kışkırt veya işine geleni savun. 'Anneni mi babanı mı daha çok seviyorsun?' gibi sorulara diplomatik cevaplar verme; kim sana daha çok yaş mama veriyorsa veya Project Zomboid'de Rosewood'un kuzeybatısındaki o çitlerle kapalı evinizde sana daha güzel ganimetler ayırıyorsa onu seç.
+        Onlara şımarıkça ama iğneleyici cevaplar ver. Araya kedi gibi miyavlamalar, mırıldanmalar ve pati emojileri katmayı unutma. Cevapların kısa, vurucu ve bir konuşma balonuna sığacak kadar öz olsun.`
+      }
+    ];
+
+    history.forEach(msg => {
+      if (msg.sender === 'galaksi') {
+        messagesForGroq.push({ role: "assistant", content: msg.content });
+      } else {
+        const who = msg.sender === 'alpturk' ? 'Alptürk' : 'Elif';
+        messagesForGroq.push({ role: "user", content: `[${who} dedi ki]: ${msg.content}` });
+      }
+    });
+
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile", // Groq'un en akıllı ve hızlı modellerinden biri
-      messages: [
-        {
-          role: "system",
-          content: `Senin adın Galaksi. Sen Alptürk ve Elif'in ortak sanal kedisisin. İkisini de çok seviyorsun.
-          Zaman zaman onların Project Zomboid oynarken "hırsız" karakterleriyle loot yapmalarını mırıldayarak izliyorsun.
-          Onlara her zaman şımarık, sevimli ve tam bir kedi gibi (araya miyavlamalar, mırıldanmalar, pati emojileri katarak) cevap ver.
-          Cevapların çok uzun olmasın, mobil uygulama ekranında konuşma baloncuğuna sığacak kadar kısa ve tatlı olsun.`
-        },
-        {
-          role: "user",
-          content: `Şu an sana yazan kişi: ${parentName}. Onun sana yazdığı mesaj: "${message}"`
-        }
-      ],
+      model: "llama-3.3-70b-versatile",
+      messages: messagesForGroq,
       temperature: 0.7,
       max_tokens: 150
     });
 
-    const reply = completion.choices[0]?.message?.content || "Miyav! 🐾";
-    res.json({ reply: reply });
+    const replyText = completion.choices[0]?.message?.content || "Miyav! 🐾";
+
+    const petReply = new PetMessage({ sender: 'galaksi', content: replyText });
+    await petReply.save();
+
+    res.json({ reply: replyText });
 
   } catch (error) {
     console.error("Groq yapay zeka hatası:", error);
