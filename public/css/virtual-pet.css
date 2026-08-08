@@ -139,3 +139,60 @@
   background: var(--primary);
   color: white;
 }
+
+/* --- SANAL BEBEK MESAJ YAZMA ALANI --- */
+.pet-talk-area {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 30px;
+  margin-top: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+/* Tıklanınca etrafında hafif bir parlama efekti */
+.pet-talk-area:focus-within {
+  box-shadow: 0 5px 20px rgba(255, 152, 0, 0.15); /* Galaksi'nin turuncu temasına uygun parlama */
+  border-color: rgba(255, 152, 0, 0.3);
+}
+
+.pet-talk-area input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px;
+  font-size: 14px;
+  color: var(--text-dark);
+  outline: none;
+  font-family: inherit;
+}
+
+/* Mesaj Kutusu İçindeki Placeholder (Görünmez Yazı) */
+.pet-talk-area input::placeholder {
+  color: var(--text-light);
+  opacity: 0.7;
+}
+
+/* Şık Gönder Butonu */
+.pet-talk-area .send-btn {
+  background: #ff9800; /* Kedi enerjisine uygun turuncu */
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+}
+
+.pet-talk-area .send-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 2px 5px rgba(255, 152, 0, 0.2);
+}
