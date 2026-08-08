@@ -144,18 +144,18 @@
 .pet-talk-area {
   display: flex;
   align-items: center;
-  background: white;
+  background: var(--card-bg);
+  /* Beyaz yerine temanın kendi kart rengini kullandık */
   padding: 8px 12px;
   border-radius: 30px;
   margin-top: 20px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
-/* Tıklanınca etrafında hafif bir parlama efekti */
 .pet-talk-area:focus-within {
-  box-shadow: 0 5px 20px rgba(255, 152, 0, 0.15); /* Galaksi'nin turuncu temasına uygun parlama */
+  box-shadow: 0 5px 20px rgba(255, 152, 0, 0.15);
   border-color: rgba(255, 152, 0, 0.3);
 }
 
@@ -166,11 +166,11 @@
   padding: 10px;
   font-size: 14px;
   color: var(--text-dark);
+  /* Arka plan koyu olduğu için açık renk metin artık harika görünecek */
   outline: none;
   font-family: inherit;
 }
 
-/* Mesaj Kutusu İçindeki Placeholder (Görünmez Yazı) */
 .pet-talk-area input::placeholder {
   color: var(--text-light);
   opacity: 0.7;
@@ -178,7 +178,8 @@
 
 /* Şık Gönder Butonu */
 .pet-talk-area .send-btn {
-  background: #ff9800; /* Kedi enerjisine uygun turuncu */
+  background: #ff9800;
+  /* Kedi enerjisine uygun turuncu */
   color: white;
   border: none;
   width: 40px;
