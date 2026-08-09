@@ -830,27 +830,29 @@ function updateThemeIcon(isDark) {
 }
 
 // --- SANAL BEBEK FRONTEND ---
+// --- SANAL BEBEK FRONTEND ---
 function openPet() {
+  // 1. Ekranları değiştir
   document.querySelectorAll('.content').forEach(page => page.style.display = 'none');
   document.getElementById('pet-page').style.display = 'block';
 
-  try {
-    const response = await fetch(SERVER_URL + '/api/pet-chat/history');
-    const messages = await response.json();
-    if (messages && messages.length > 0) {
-      // Sadece kedinin (galaksi) attığı son mesajı bul
-      const galaksiMessages = messages.filter(m => m.sender === 'galaksi');
-      if (galaksiMessages.length > 0) {
-        const lastMsg = galaksiMessages[galaksiMessages.length - 1];
-        const petMessage = document.getElementById('pet-message');
-        if (petMessage) {
-          petMessage.innerText = lastMsg.content;
+  // 2. Kedi odasına girildiği an veritabanından mesajları çek (Güvenli Yöntem)
+  fetch(SERVER_URL + '/api/pet-chat/history')
+    .then(res => res.json())
+    .then(messages => {
+      if (messages && messages.length > 0) {
+        // Sadece kedinin (galaksi) attığı son mesajı bul
+        const galaksiMessages = messages.filter(m => m.sender === 'galaksi');
+        if (galaksiMessages.length > 0) {
+          const lastMsg = galaksiMessages[galaksiMessages.length - 1];
+          const petMessage = document.getElementById('pet-message');
+          if (petMessage) {
+            petMessage.innerText = lastMsg.content;
+          }
         }
       }
-    }
-  } catch (error) {
-    console.log("Kedi mesajı yüklenemedi:", error);
-  }
+    })
+    .catch(err => console.log("Kedi mesajı yüklenemedi:", err));
 }
 
 function closePet() {
