@@ -830,7 +830,6 @@ function updateThemeIcon(isDark) {
 }
 
 // --- SANAL BEBEK FRONTEND ---
-// --- SANAL BEBEK FRONTEND ---
 function openPet() {
   // 1. Ekranları değiştir
   document.querySelectorAll('.content').forEach(page => page.style.display = 'none');
