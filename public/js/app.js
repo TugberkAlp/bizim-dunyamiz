@@ -906,7 +906,7 @@ function lovePet() {
   // Sunucuya "love" (sev) komutu gönder
   fetch(SERVER_URL + '/api/pet-status/update', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    header: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'love' })
   })
     .then(res => res.json())
