@@ -610,7 +610,7 @@ setInterval(async () => {
   } catch (error) {
     console.error("Zamanlayıcı hatası:", error);
   }
-}, 3600000);
+}, 10000);
 
 // Sunucuyu başlat
 server.listen(PORT, () => {
