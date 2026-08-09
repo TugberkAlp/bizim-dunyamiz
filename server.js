@@ -180,6 +180,9 @@ app.post('/api/messages', async (req, res) => {
       console.log("⚠️ Alıcının FCM token'ı veritabanında yok, sadece mesaj kaydedildi.");
     }
 
+    // Galaksi Müdahalesi
+    triggerGalaksiIntervention(io)
+
     // 3. İstemciye her halükarda başarılı de
     res.json({ success: true, message: newMessage });
 
@@ -476,6 +479,46 @@ app.post('/api/pet-chat', async (req, res) => {
     res.status(500).json({ reply: "Miyav... Uykum açılmadı, sonra dene! 😿" });
   }
 });
+
+// Galaksi'nin araya girme ihtimalini hesaplayan ve tetikleyen fonksiyon
+async function triggerGalaksiIntervention(io) {
+  try {
+    // 1. Zar atıyoruz: %15 ihtimalle araya girsin
+    const chance = Math.random();
+    //if (chance > 0.15) return; // %85 ihtimalle hiçbir şey yapma, sessizce çık
+
+    console.log("Galaksi araya giriyor! Zar tuttu...");
+
+    // 2. Neler konuştuğunuzu anlaması için (normal mesajlarınızdan) son 5 mesajı çek
+    const lastMessages = await Message.find().sort({ timestamp: -1 }).limit(5); 
+
+    // 3. Groq'a durumu anlatan ve kışkırtan gizli prompt
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `Sen Galaksi'sin. Alptürk ve Elif şu an kendi aralarında mesajlaşıyor. Sen sessizce onları dinleyen şımarık, çakal bir kedisin. 
+          Sözlerini keserek onlara ukalaca veya komik bir şekilde laf sok! Sadece 1 kısa cümle kur. Gerçek kedi emojileri (🐾, 😼) kullan. ASLA köşeli parantez kullanma.`
+        }
+      ],
+      temperature: 0.8,
+      max_tokens: 100
+    });
+
+    const sneakyReply = completion.choices[0]?.message?.content || "Miyav! Ne kaynatıyorsunuz bensiz? 🐾";
+
+    // 4. Kedi veritabanına bu mesajı kaydet ki sayfasına gidince görünsün
+    const petMessage = new PetMessage({ sender: 'galaksi', content: sneakyReply });
+    await petMessage.save();
+
+    // 5. HER İKİ TELEFONA DA SİNYAL GÖNDER (Miyavlat!)
+    io.emit('galaksi_intervened', { message: sneakyReply });
+
+  } catch (error) {
+    console.error("Galaksi araya girerken hata oluştu:", error);
+  }
+}
 
 // Sunucuyu başlat
 server.listen(PORT, () => {

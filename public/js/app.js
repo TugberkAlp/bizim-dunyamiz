@@ -1034,7 +1034,7 @@ async function sendMessageToPet() {
   if (!petMessageInput) return;
 
   const userText = petMessageInput.value.trim();
-  if(userText === '') return;
+  if (userText === '') return;
 
   petMessageInput.value = '';
   petMessage.innerText = 'Galaksi düşünüyor...';
@@ -1046,7 +1046,7 @@ async function sendMessageToPet() {
       body: JSON.stringify({ sender: currentUser, message: userText })
     });
     const data = await response.json();
-    if(data.reply) {
+    if (data.reply) {
       petMessage.innerText = data.reply;
     } else {
       petMessage.innerText = "Miyav, bağlantım koptu sanırım! ";
@@ -1056,4 +1056,61 @@ async function sendMessageToPet() {
     petMessage.innerText = "Miyav, bir şeyler ters gitti! ";
   }
 
+}
+
+// Sunucudan gelen "Kedi araya girdi" sinyalini dinle
+socket.on('galaksi_intervened', (data) => {
+
+  // 1. Miyav sesini çal
+  try {
+    const miyavSound = new Audio('/assets/sounds/miyav.mp3');
+    miyavSound.play();
+  } catch (e) {
+    console.log("Ses çalınamadı", e);
+  }
+
+  // 2. Ekranda geçici ve tatlı bir bildirim göster
+  showGalaksiNotification("Galaksi bir şeyler söylüyor... 🐾");
+
+  // 3. (Opsiyonel) Arka planda kedinin baloncuğunu da önceden güncelle
+  const petMessageContainer = document.getElementById('pet-message');
+  if (petMessageContainer) {
+    petMessageContainer.innerText = data.message;
+  }
+});
+
+// Bildirimi ekranda gösteren animasyonlu fonksiyon
+function showGalaksiNotification(text) {
+  const notif = document.createElement('div');
+  notif.innerText = text;
+  Object.assign(notif.style, {
+    position: 'fixed',
+    top: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: '#ff9800',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '20px',
+    fontWeight: 'bold',
+    zIndex: '9999',
+    boxShadow: '0 4px 15px rgba(255, 152, 0, 0.4)',
+    animation: 'popIn 0.5s ease-out',
+    cursor: 'pointer'
+  });
+
+  // Bildirime tıklanırsa kedinin sayfasını aç
+  notif.onclick = () => {
+    openPet(); // Senin kedi ekranını açan fonksiyonun
+    notif.remove();
+  };
+
+  document.body.appendChild(notif);
+
+  // 4 saniye sonra bildirimi sil
+  setTimeout(() => {
+    notif.style.opacity = '0';
+    notif.style.transition = 'opacity 0.5s';
+    setTimeout(() => notif.remove(), 500);
+  }, 4000);
 }
