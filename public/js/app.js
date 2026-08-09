@@ -831,23 +831,17 @@ function updateThemeIcon(isDark) {
 
 // --- SANAL BEBEK FRONTEND ---
 function openPet() {
-  // 1. Ekranları değiştir
   document.querySelectorAll('.content').forEach(page => page.style.display = 'none');
   document.getElementById('pet-page').style.display = 'block';
 
-  // 2. Kedi odasına girildiği an veritabanından mesajları çek (Güvenli Yöntem)
+  // Veritabanından kedinin EN SON mesajını (nokta atışı) çekiyoruz
   fetch(SERVER_URL + '/api/pet-chat/history', { cache: 'no-store' })
     .then(res => res.json())
     .then(messages => {
       if (messages && messages.length > 0) {
-        // Sadece kedinin (galaksi) attığı son mesajı bul
-        const galaksiMessages = messages.filter(m => m.sender === 'galaksi');
-        if (galaksiMessages.length > 0) {
-          const lastMsg = galaksiMessages[galaksiMessages.length - 1];
-          const petMessage = document.getElementById('pet-message');
-          if (petMessage) {
-            petMessage.innerText = lastMsg.content;
-          }
+        const petMessage = document.getElementById('pet-message');
+        if (petMessage) {
+          petMessage.innerText = messages[0].content; // Doğrudan o tek mesajı yazdır
         }
       }
     })

@@ -418,12 +418,14 @@ app.post('/api/register-token', async (req, res) => {
   }
 });
 
-// Kedinin geçmiş mesajlarını getirme rotası
+// Kedinin en son mesajını getirme rotası
 app.get('/api/pet-chat/history', async (req, res) => {
   try {
-    // Son 50 mesajı eskiden yeniye doğru sıralayarak getir
-    const messages = await PetMessage.find().sort({ timestamp: 1 }).limit(50);
-    res.json(messages);
+    // Sadece kedinin (galaksi) attığı, en son (timestamp: -1) 1 mesajı getirir
+    const lastMessage = await PetMessage.findOne({ sender: 'galaksi' }).sort({ timestamp: -1 });
+    
+    // Eğer mesaj varsa dizi içinde gönder (frontend bozulmasın diye), yoksa boş dizi gönder
+    res.json(lastMessage ? [lastMessage] : []);
   } catch (error) {
     res.status(500).json({ error: "Geçmiş getirilemedi" });
   }
