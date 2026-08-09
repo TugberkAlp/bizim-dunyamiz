@@ -846,6 +846,16 @@ function openPet() {
       }
     })
     .catch(err => console.log("Kedi mesajı yüklenemedi:", err));
+
+  fetch(SERVER_URL + '/api/pet-status', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(status => {
+      if (status) {
+        document.getElementById('pet-food-bar').style.width = status.food + '%';
+        document.getElementById('pet-love-bar').style.width = status.love + '%';
+      }
+    })
+    .catch(err => console.log("Durum okunamadı:", err));
 }
 
 function closePet() {
@@ -860,15 +870,6 @@ function feedPet() {
   const petImg = document.getElementById('pet-image');
   const msg = document.getElementById('pet-message');
 
-  let barValue = parseInt(foodBar.style.width || "0");
-  barValue += 15;
-  if(barValue > 100) {
-    barValue = 100;
-  }
-  foodBar.style.width = barValue + '%';
-  
-
-
   // Yemek yerken kedi hafifçe zıplar ve büyür
   petImg.style.transform = 'scale(1.2) translateY(-15px)';
   msg.innerText = "Yummy! Yemek çok güzel 🍗";
@@ -877,28 +878,43 @@ function feedPet() {
   setTimeout(() => {
     petImg.style.transform = 'scale(1) translateY(0)';
   }, 400);
+
+  // Sunucuya "feed" (besle) komutu gönder
+  fetch(SERVER_URL + '/api/pet-status/update', {
+    method: 'POST',
+    header: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'feed' })
+  })
+    .then(res => res.json())
+    .then(status => {
+      document.getElementById('pet-food-bar').style.width = status.food + '%';
+    })
+    .catch(err => console.log("Mama verilemedi:", err));
 }
 
 function lovePet() {
   const msg = document.getElementById('pet-message');
-  msg.innerText = "Pırrrrr... Seni çok seviyorum! 💖🐾";
+  msg.innerText = "Pırrrrr... Çok huzurluyum! 💖🐾";
 
-  // Kedinin kapsayıcısını seç
   const petContainer = document.getElementById('the-pet');
-
-  // Yeni bir kalp elementi oluştur ve uçur
   const heart = document.createElement('div');
   heart.innerHTML = '💖';
   heart.className = 'floating-heart';
-
   petContainer.appendChild(heart);
+  setTimeout(() => { heart.remove(); }, 1000);
 
-  // Animasyon bitince kalbi HTML'den temizle
-  setTimeout(() => {
-    heart.remove();
-  }, 1000);
+  // Sunucuya "love" (sev) komutu gönder
+  fetch(SERVER_URL + '/api/pet-status/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'love' })
+  })
+    .then(res => res.json())
+    .then(status => {
+      document.getElementById('pet-love-bar').style.width = status.love + '%';
+    })
+    .catch(err => console.log("Sevgilemedi:", err));
 }
-
 function openLocationModal() {
   const modal = document.getElementById('location-modal');
   modal.style.display = 'flex';

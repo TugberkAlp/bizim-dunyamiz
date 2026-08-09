@@ -14,6 +14,7 @@ const State = require('./models/State');
 const { Groq } = require('groq-sdk');
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const PetMessage = require('./models/PetMessage');
+const PetStatus = require('./models/PetStatus');
 
 // --- YENİ VE HATASIZ FIREBASED BAŞLATMA YÖNTEMİ ---
 const { initializeApp, cert } = require("firebase-admin/app");
@@ -492,7 +493,7 @@ async function triggerGalaksiIntervention(io) {
     console.log("Galaksi araya giriyor! Zar tuttu...");
 
     // 2. Neler konuştuğunuzu anlaması için son 5 mesajı çek ve eskiden yeniye sırala
-    const lastMessages = await Message.find().sort({ timestamp: -1 }).limit(5); 
+    const lastMessages = await Message.find().sort({ timestamp: -1 }).limit(5);
     lastMessages.reverse();
 
     // 3. Groq'a göndereceğimiz Zeka Paketini (Prompt) hazırlıyoruz
@@ -532,6 +533,84 @@ async function triggerGalaksiIntervention(io) {
     console.error("Galaksi araya girerken hata oluştu:", error);
   }
 }
+
+app.get('/api/pet-status', async (req, res) => {
+  try {
+    let status = await PetStatus.findOne();
+
+    if (!status) {
+      status = new PetStatus();
+      await status.save();
+    }
+
+    res.json(status);
+
+  } catch (error) {
+    console.error("Kedi durumu çekilemedi:", error);
+    res.status(500).json({ error: "Kedi durumu okunamadı" });
+  }
+});
+
+app.post('/api/pet-status/update', async (req, res) => {
+  try {
+    // 1. Frontend'den gelen eylemi (aksiyonu) al
+    // action değişkeni 'feed' (besle) veya 'love' (sev) olacak
+    const { action } = req.body;
+
+    // 2. Veritabanındaki kediyi bul
+    let status = await PetStatus.findOne();
+    if (!status) return res.status(404).json({ error: "Kedi bulunamadı" });
+
+    // 3. MANTIK KURGUSU (İşte burayı senin yazmanı istiyorum)
+
+    if (action === 'feed') {
+      status.food = Math.min(status.food + 15, 100);
+    } else if (action === 'love') {
+      status.love = Math.min(status.love + 15, 100);
+    }
+    status.lastInteraction = new Date();
+
+    // 4. Değişiklikleri veritabanına kaydet
+    await status.save();
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({ error: "Durum güncellenemedi" });
+  }
+});
+
+setInterval(async () => {
+  try {
+    let status = await PetStatus.findOne();
+    if (!status) return;
+
+    status.food = Math.max(status.food - 5, 0);
+    status.love = Math.max(status.love - 5, 0);
+
+    if (status.food <= 20) {
+      // Hem telefona bildirim at
+      sendSystemNotification('alpturk', 'Galaksi Çok Aç! 😿', 'Karnım gurulduyor, çabuk mama verin!');
+      sendSystemNotification('elif', 'Galaksi Çok Aç! 😿', 'Karnım gurulduyor, çabuk mama verin!');
+
+      // Uygulama açıksa ekranda da bağırsın
+      if (typeof io !== 'undefined') {
+        io.emit('galaksi_intervened', { message: "Miyav! Açlıktan bayılacağım, insafsızlar! 🍗" });
+      }
+    } else if (status.love <= 20) {
+      // Sadece sevgi düştüyse
+      sendSystemNotification('alpturk', 'Galaksi İlgi İstiyor! 😾', 'Kimse benimle ilgilenmiyor mu?');
+      sendSystemNotification('elif', 'Galaksi İlgi İstiyor! 😾', 'Kimse benimle ilgilenmiyor mu?');
+
+      if (typeof io !== 'undefined') {
+        io.emit('galaksi_intervened', { message: "Patiği kestim! Beni niye sevmiyorsunuz! 😾" });
+      }
+    }
+
+    await status.save();
+    console.log("⏳ Zamanlayıcı: Kedinin değerleri düşürüldü ve kaydedildi.");
+  } catch (error) {
+    console.error("Zamanlayıcı hatası:", error);
+  }
+}, 3600000);
 
 // Sunucuyu başlat
 server.listen(PORT, () => {
