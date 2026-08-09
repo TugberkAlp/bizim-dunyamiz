@@ -487,7 +487,7 @@ async function triggerGalaksiIntervention(io) {
   try {
     // 1. Zar atıyoruz: %15 ihtimalle araya girsin
     const chance = Math.random();
-    //if (chance > 0.15) return; // %85 ihtimalle hiçbir şey yapma, sessizce çık
+    if (chance > 0.15) return; // %85 ihtimalle hiçbir şey yapma, sessizce çık
 
     console.log("Galaksi araya giriyor! Zar tuttu...");
 
