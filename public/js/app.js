@@ -833,6 +833,24 @@ function updateThemeIcon(isDark) {
 function openPet() {
   document.querySelectorAll('.content').forEach(page => page.style.display = 'none');
   document.getElementById('pet-page').style.display = 'block';
+
+  try {
+    const response = await fetch(SERVER_URL + '/api/pet-chat/history');
+    const messages = await response.json();
+    if (messages && messages.length > 0) {
+      // Sadece kedinin (galaksi) attığı son mesajı bul
+      const galaksiMessages = messages.filter(m => m.sender === 'galaksi');
+      if (galaksiMessages.length > 0) {
+        const lastMsg = galaksiMessages[galaksiMessages.length - 1];
+        const petMessage = document.getElementById('pet-message');
+        if (petMessage) {
+          petMessage.innerText = lastMsg.content;
+        }
+      }
+    }
+  } catch (error) {
+    console.log("Kedi mesajı yüklenemedi:", error);
+  }
 }
 
 function closePet() {
@@ -1063,7 +1081,7 @@ socket.on('galaksi_intervened', (data) => {
 
   // 1. Miyav sesini çal
   try {
-    const miyavSound = new Audio('/assets/sounds/miyav.mp3');
+    const miyavSound = new Audio('assets/sounds/miyav.mp3');
     miyavSound.play();
   } catch (e) {
     console.log("Ses çalınamadı", e);
