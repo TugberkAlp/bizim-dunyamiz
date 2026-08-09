@@ -853,9 +853,21 @@ function closePet() {
   document.getElementById('home-page').style.display = 'block';
 }
 
+const foodBar = document.getElementById('pet-food-bar');
+const loveBar = document.getElementById('pet-love-bar');
+
 function feedPet() {
   const petImg = document.getElementById('pet-image');
   const msg = document.getElementById('pet-message');
+
+  let barValue = parseInt(foodBar.style.width || "0");
+  barValue += 15;
+  if(barValue > 100) {
+    barValue = 100;
+  }
+  foodBar.style.width = barValue + '%';
+  
+
 
   // Yemek yerken kedi hafifçe zıplar ve büyür
   petImg.style.transform = 'scale(1.2) translateY(-15px)';
