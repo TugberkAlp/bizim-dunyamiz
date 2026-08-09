@@ -882,7 +882,7 @@ function feedPet() {
   // Sunucuya "feed" (besle) komutu gönder
   fetch(SERVER_URL + '/api/pet-status/update', {
     method: 'POST',
-    header: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'feed' })
   })
     .then(res => res.json())
@@ -906,7 +906,7 @@ function lovePet() {
   // Sunucuya "love" (sev) komutu gönder
   fetch(SERVER_URL + '/api/pet-status/update', {
     method: 'POST',
-    header: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'love' })
   })
     .then(res => res.json())
