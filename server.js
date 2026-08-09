@@ -423,7 +423,7 @@ app.get('/api/pet-chat/history', async (req, res) => {
   try {
     // Sadece kedinin (galaksi) attığı, en son (timestamp: -1) 1 mesajı getirir
     const lastMessage = await PetMessage.findOne({ sender: 'galaksi' }).sort({ timestamp: -1 });
-    
+
     // Eğer mesaj varsa dizi içinde gönder (frontend bozulmasın diye), yoksa boş dizi gönder
     res.json(lastMessage ? [lastMessage] : []);
   } catch (error) {
@@ -487,34 +487,45 @@ async function triggerGalaksiIntervention(io) {
   try {
     // 1. Zar atıyoruz: %15 ihtimalle araya girsin
     const chance = Math.random();
-    if (chance > 0.15) return; // %85 ihtimalle hiçbir şey yapma, sessizce çık
+    if (chance > 0.15) return;
 
     console.log("Galaksi araya giriyor! Zar tuttu...");
 
-    // 2. Neler konuştuğunuzu anlaması için (normal mesajlarınızdan) son 5 mesajı çek
+    // 2. Neler konuştuğunuzu anlaması için son 5 mesajı çek ve eskiden yeniye sırala
     const lastMessages = await Message.find().sort({ timestamp: -1 }).limit(5); 
+    lastMessages.reverse();
 
-    // 3. Groq'a durumu anlatan ve kışkırtan gizli prompt
+    // 3. Groq'a göndereceğimiz Zeka Paketini (Prompt) hazırlıyoruz
+    const messagesForGroq = [
+      {
+        role: "system",
+        content: `Sen Galaksi'sin. Alptürk ve Elif şu an kendi aralarında mesajlaşıyor. Sen sessizce onları dinleyen şımarık, çakal bir kedisin. 
+        Aşağıdaki mesajları oku ve onların KONUŞTUĞU KONUYA DAİR sözlerini keserek ukalaca veya komik bir şekilde laf sok! 
+        Sadece 1 veya 2 kısa cümle kur. Gerçek kedi emojileri (🐾, 😼) kullan. ASLA köşeli parantez kullanma.`
+      }
+    ];
+
+    // 4. İŞTE SİHİR BURADA: Sizin konuştuklarınızı Galaksi'nin beynine ekliyoruz
+    lastMessages.forEach(msg => {
+      const who = msg.sender === 'alpturk' ? 'Alptürk' : 'Elif';
+      messagesForGroq.push({ role: "user", content: `[${who} dedi ki]: ${msg.text}` });
+    });
+
+    // 5. Groq'tan çakalca cevabı iste
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content: `Sen Galaksi'sin. Alptürk ve Elif şu an kendi aralarında mesajlaşıyor. Sen sessizce onları dinleyen şımarık, çakal bir kedisin. 
-          Sözlerini keserek onlara ukalaca veya komik bir şekilde laf sok! Sadece 1 kısa cümle kur. Gerçek kedi emojileri (🐾, 😼) kullan. ASLA köşeli parantez kullanma.`
-        }
-      ],
+      messages: messagesForGroq,
       temperature: 0.8,
       max_tokens: 100
     });
 
     const sneakyReply = completion.choices[0]?.message?.content || "Miyav! Ne kaynatıyorsunuz bensiz? 🐾";
 
-    // 4. Kedi veritabanına bu mesajı kaydet ki sayfasına gidince görünsün
+    // 6. Kedi veritabanına bu mesajı kaydet ki sayfasına gidince görünsün
     const petMessage = new PetMessage({ sender: 'galaksi', content: sneakyReply });
     await petMessage.save();
 
-    // 5. HER İKİ TELEFONA DA SİNYAL GÖNDER (Miyavlat!)
+    // 7. HER İKİ TELEFONA DA SİNYAL GÖNDER (Miyavlat!)
     io.emit('galaksi_intervened', { message: sneakyReply });
 
   } catch (error) {
