@@ -836,7 +836,7 @@ function openPet() {
   document.getElementById('pet-page').style.display = 'block';
 
   // 2. Kedi odasına girildiği an veritabanından mesajları çek (Güvenli Yöntem)
-  fetch(SERVER_URL + '/api/pet-chat/history')
+  fetch(SERVER_URL + '/api/pet-chat/history', { cache: 'no-store' })
     .then(res => res.json())
     .then(messages => {
       if (messages && messages.length > 0) {
