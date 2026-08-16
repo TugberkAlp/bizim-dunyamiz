@@ -60,11 +60,25 @@
 
       <!-- Sağ Taraf: Avatarlar ve Minik Mesafe Rozeti -->
       <div class="header-right">
-        <div class="profile-pics">
-          <img src="assets/images/alpturk.png" alt="Alptürk" class="profile-pic"
-            style="padding: 0; object-fit: cover; border: 1px solid #ccc;">
-          <img src="assets/images/elif.png" alt="Elif" class="profile-pic"
-            style="padding: 0; object-fit: cover; margin-left: -10px; border: 1px solid #ccc;">
+
+        <div class="profile-pics" style="display: flex; align-items: center;">
+
+          <!-- Alptürk Avatar Kutusu -->
+          <div class="avatar-wrapper" style="position: relative; display: inline-block;">
+            <img src="assets/images/alpturk.png" alt="Alptürk" class="profile-pic"
+              style="padding: 0; object-fit: cover; border: 1px solid #ccc;">
+            <!-- Durum Noktası -->
+            <div class="status-dot online" id="alpturk-status"></div>
+          </div>
+
+          <!-- Elif Avatar Kutusu (margin-left buraya taşındı) -->
+          <div class="avatar-wrapper" style="position: relative; display: inline-block; margin-left: -10px;">
+            <img src="assets/images/elif.png" alt="Elif" class="profile-pic"
+              style="padding: 0; object-fit: cover; border: 1px solid #ccc;">
+            <!-- Durum Noktası -->
+            <div class="status-dot online" id="elif-status"></div>
+          </div>
+
         </div>
 
         <!-- YENİ: Tıklanamaz, Küçük Mesafe Rozeti -->
@@ -72,6 +86,7 @@
           <i class="fa-solid fa-location-dot" style="color: var(--secondary);"></i>
           <span id="header-distance-val">...</span> km
         </div>
+
       </div>
     </header>
 
@@ -364,8 +379,8 @@
 
         <div class="pet-avatar" id="the-pet"
           style="position: relative; display: flex; justify-content: center; align-items: center; width: 150px; height: 150px; margin: 0 auto; transition: transform 0.3s;">
-          <img src="assets/images/cat.gif" alt="Ortak Kedimiz"
-            id="pet-image" style="width: 110px; filter: drop-shadow(0px 8px 5px rgba(0,0,0,0.15));">
+          <img src="assets/images/cat.gif" alt="Ortak Kedimiz" id="pet-image"
+            style="width: 110px; filter: drop-shadow(0px 8px 5px rgba(0,0,0,0.15));">
         </div>
         <div class="pet-shadow"></div>
       </div>

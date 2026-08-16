@@ -77,3 +77,37 @@ header {
   transform: scale(0.95);
   background: rgba(100, 200, 192, 0.3);
 }
+
+/* DURUM NOKTASI TASARIMI */
+.status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;  /* Senin fotoğraflar küçükse noktayı 12px yaptım, daha kibar durur */
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff; /* Fotoğrafla karışmaması için etrafına beyaz bir çerçeve */
+  cursor: pointer;
+  z-index: 10; /* Her zaman fotoğrafın üstünde kalsın */
+  transition: all 0.3s ease;
+}
+
+/* RENKLER */
+.status-dot.online {
+  background-color: #4CAF50; /* Canlı yeşil */
+}
+.status-dot.offline {
+  background-color: #9E9E9E; /* Gri */
+}
+
+/* İLERİDE EKLENECEK KALP ATIŞI ANİMASYONU İÇİN HAZIRLIK */
+.status-dot.heartbeat {
+  background-color: #ff3b30; /* Kırmızı */
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
