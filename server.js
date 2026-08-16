@@ -397,6 +397,24 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('send_heartbeat', (data) => {
+    const { from, to } = data;
+    console.log(`💓 Kalp atışı isteği alındı: ${from} -> ${to}`);
+
+    // 1. Sinyali diğer bağlı kullanıcılara (Elif'e) canlı olarak ilet
+    socket.broadcast.emit('receive_heartbeat', { from: from });
+
+    // 2. Eğer Elif o an uygulamada değilse / çevrimdışıysa Push Bildirimi at
+    // (Not: Kendi bildirim fonksiyonunu burada tetikliyoruz)
+    if (typeof sendSystemNotification === 'function') {
+      sendSystemNotification(
+        to,
+        'Seni Düşünüyor... 💓',
+        `${from === 'alpturk' ? 'Alptürk' : 'Elif'} sana bir kalp atışı gönderdi!`
+      );
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log('Bir cihaz ayrıldı:', socket.id);
   });
@@ -456,33 +474,33 @@ app.post('/api/pet-chat', async (req, res) => {
       }
     ];
 
-  history.forEach(msg => {
-    if (msg.sender === 'galaksi') {
-      messagesForGroq.push({ role: "assistant", content: msg.content });
-    } else {
-      const who = msg.sender === 'alpturk' ? 'Alptürk' : 'Elif';
-      messagesForGroq.push({ role: "user", content: `[${who} dedi ki]: ${msg.content}` });
-    }
-  });
+    history.forEach(msg => {
+      if (msg.sender === 'galaksi') {
+        messagesForGroq.push({ role: "assistant", content: msg.content });
+      } else {
+        const who = msg.sender === 'alpturk' ? 'Alptürk' : 'Elif';
+        messagesForGroq.push({ role: "user", content: `[${who} dedi ki]: ${msg.content}` });
+      }
+    });
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: messagesForGroq,
-    temperature: 0.7,
-    max_tokens: 150
-  });
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: messagesForGroq,
+      temperature: 0.7,
+      max_tokens: 150
+    });
 
-  const replyText = completion.choices[0]?.message?.content || "Miyav! 🐾";
+    const replyText = completion.choices[0]?.message?.content || "Miyav! 🐾";
 
-  const petReply = new PetMessage({ sender: 'galaksi', content: replyText });
-  await petReply.save();
+    const petReply = new PetMessage({ sender: 'galaksi', content: replyText });
+    await petReply.save();
 
-  res.json({ reply: replyText });
+    res.json({ reply: replyText });
 
-} catch (error) {
-  console.error("Groq yapay zeka hatası:", error);
-  res.status(500).json({ reply: "Miyav... Uykum açılmadı, sonra dene! 😿" });
-}
+  } catch (error) {
+    console.error("Groq yapay zeka hatası:", error);
+    res.status(500).json({ reply: "Miyav... Uykum açılmadı, sonra dene! 😿" });
+  }
 });
 
 // Galaksi'nin araya girme ihtimalini hesaplayan ve tetikleyen fonksiyon

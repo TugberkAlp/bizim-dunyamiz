@@ -1155,3 +1155,88 @@ function showGalaksiNotification(text) {
     setTimeout(() => notif.remove(), 500);
   }, 4000);
 }
+
+const partner = currentUser === 'alpturk' ? 'elif' : 'alpturk';
+
+// ==========================================
+// 1. PARTNERİN NOKTASINI DİNLEME (TIKLAMA & UZUN BASMA)
+// ==========================================
+
+// Kendi noktamıza değil, sadece partnerin durum noktasına dinleyici ekliyoruz
+const partnerStatusDot = document.getElementById(`${partner}-status`);
+let pressTimer = null;
+let isLongPress = false;
+
+if (partnerStatusDot) {
+  const startPress = (e) => {
+    isLongPress = false;
+    
+    pressTimer = setTimeout(() => {
+      isLongPress = true;
+      triggerHeartbeatSent();
+    }, 800);
+  };
+
+  const endPress = (e) => {
+    clearTimeout(pressTimer);
+    
+    if (!isLongPress) {
+      showLastSeenInfo();
+    }
+  };
+
+  const cancelPress = () => {
+    clearTimeout(pressTimer);
+  };
+
+  partnerStatusDot.addEventListener('mousedown', startPress);
+  partnerStatusDot.addEventListener('mouseup', endPress);
+  partnerStatusDot.addEventListener('mouseleave', cancelPress);
+
+  partnerStatusDot.addEventListener('touchstart', (e) => {
+    e.preventDefault(); 
+    startPress(e);
+  });
+  partnerStatusDot.addEventListener('touchend', endPress);
+  partnerStatusDot.addEventListener('touchcancel', cancelPress);
+}
+
+// ==========================================
+// 2. SİNYALİ GÖNDERME
+// ==========================================
+function triggerHeartbeatSent() {
+  if (navigator.vibrate) navigator.vibrate(80);
+
+  console.log(`💓 Kalp atışı gönderiliyor: ${currentUser} -> ${partner}`);
+
+  if (typeof socket !== 'undefined' && socket.connected) {
+    // İsimleri sabit yazmak yerine dinamik değişkenlerimizi kullanıyoruz
+    socket.emit('send_heartbeat', { from: currentUser, to: partner });
+  }
+}
+
+function showLastSeenInfo() {
+  alert(`${partner.toUpperCase()} kullanıcısının son görülme durumu...`);
+}
+
+// ==========================================
+// 3. GELEN SİNYALİ KARŞILAMA VE GÖRSELLEŞTİRME
+// ==========================================
+if (typeof socket !== 'undefined') {
+  socket.on('receive_heartbeat', (data) => {
+    console.log("💓 Karşı taraftan kalp atışı geldi:", data);
+
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]); 
+    }
+
+    // Sinyali kim gönderdiyse (data.from), ekranda ONUN lambasını kırmızı yapıp attırıyoruz
+    const dot = document.getElementById(`${data.from}-status`);
+    if (dot) {
+      dot.classList.add('heartbeat');
+      setTimeout(() => {
+        dot.classList.remove('heartbeat');
+      }, 4000);
+    }
+  });
+}
