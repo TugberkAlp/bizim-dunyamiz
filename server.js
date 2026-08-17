@@ -440,7 +440,7 @@ io.on('connection', (socket) => {
       console.log('Bir cihaz ayrıldı:', socket.id);
     }
   });
-  
+
 });
 
 app.post('/api/register-token', async (req, res) => {
@@ -507,7 +507,7 @@ app.post('/api/pet-chat', async (req, res) => {
     });
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama3-70b-8192",
       messages: messagesForGroq,
       temperature: 0.7,
       max_tokens: 150
@@ -556,7 +556,7 @@ async function triggerGalaksiIntervention(io) {
 
     // 5. Groq'tan çakalca cevabı iste
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama3-70b-8192",
       messages: messagesForGroq,
       temperature: 0.8,
       max_tokens: 100
