@@ -108,16 +108,19 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px; /* Fotoğraf ile hız arasındaki boşluk */
+  gap: 4px;
+  /* Fotoğraf ile hız arasındaki boşluk */
 }
 
 .custom-profile-pin img {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  border: 3px solid var(--primary); /* Fotoğrafın etrafında pembe çerçeve */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  object-fit: cover; /* Fotoğrafın orantısını bozmadan daireye sığdırır */
+  border: 3px solid var(--primary);
+  /* Fotoğrafın etrafında pembe çerçeve */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  object-fit: cover;
+  /* Fotoğrafın orantısını bozmadan daireye sığdırır */
 }
 
 .pin-speed-badge {
@@ -127,13 +130,15 @@
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 12px;
-  white-space: nowrap; /* Yazının alt satıra inmesini engeller */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  white-space: nowrap;
+  /* Yazının alt satıra inmesini engeller */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* --- SABİT KONUM (EV) PİNİ --- */
 .fixed-home-pin {
-  background: var(--secondary); /* Turkuaz rengi */
+  background: var(--secondary);
+  /* Turkuaz rengi */
   color: white;
   width: 32px;
   height: 32px;
@@ -143,5 +148,40 @@
   justify-content: center;
   font-size: 14px;
   border: 2px solid white;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* TOAST BİLDİRİMİ TASARIMI */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  /* Ekranın altından 20px yukarıda başlar */
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  /* Ortalar ve biraz aşağı gizler */
+  background-color: var(--primary);
+  /* Uygulamanın ana rengini kullanır */
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 30px;
+  /* Tam oval kenarlar */
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  /* Zarif bir gölge */
+  z-index: 10000;
+  /* Her şeyin üstünde görünmesi için */
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  /* Yaylanarak çıkma efekti */
+}
+
+/* GÖRÜNÜR OLDUĞUNDA ÇALIŞACAK SINIF */
+.toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  /* Yukarı doğru süzülerek yerine oturur */
+  bottom: 40px;
 }

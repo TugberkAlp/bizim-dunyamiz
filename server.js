@@ -65,6 +65,8 @@ const userStates = {
   elif: { isAtWork: false, isAtHome: false, isNearPartner: false }
 };
 
+const onlineUsers = {};
+
 async function loadStatesFromDB() {
   try {
     const states = await State.find();
@@ -415,9 +417,30 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('disconnect', () => {
-    console.log('Bir cihaz ayrıldı:', socket.id);
+  // 1. Kullanıcı uygulamayı açtığında
+  socket.on('user_connected', (username) => {
+    onlineUsers[socket.id] = username;
+    
+    // Karşı tarafa "Geldi!" diye haber veriyoruz
+    socket.broadcast.emit('user_status', { user: username, status: 'online' });
   });
+
+  // 2. Kullanıcı uygulamayı kapattığında veya arka plana attığında
+  socket.on('disconnect', () => {
+    const username = onlineUsers[socket.id];
+    if (username) {
+      const now = new Date();
+      // Karşı tarafa "Çıktı ve son saati bu" diyoruz
+      socket.broadcast.emit('user_status', { 
+        user: username, 
+        status: 'offline', 
+        lastSeen: now 
+      });
+      delete onlineUsers[socket.id];
+      console.log('Bir cihaz ayrıldı:', socket.id);
+    }
+  });
+  
 });
 
 app.post('/api/register-token', async (req, res) => {

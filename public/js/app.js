@@ -1021,6 +1021,41 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// --- UYGULAMA AÇILDIĞINDA SUNUCUYA HABER VER ---
+socket.on('connect', () => {
+  if (currentUser) {
+    socket.emit('user_connected', currentUser);
+  }
+});
+
+// --- PARTNERİN DURUMUNU HAFIZADA TUTACAĞIMIZ DEĞİŞKENLER ---
+let partnerLastSeen = null;
+let partnerIsOnline = false;
+
+// --- SUNUCUDAN GELEN DURUM BİLGİSİNİ DİNLE ---
+socket.on('user_status', (data) => {
+  if (data.user === partner) {
+    const dot = document.getElementById(`${partner}-status`);
+
+    if (data.status === 'online') {
+      partnerIsOnline = true;
+      if (dot) {
+        dot.classList.remove('offline');
+        dot.classList.add('online');
+      }
+      // O girdiğinde ben zaten içerideysem, ona kendi varlığımı hatırlatıyorum
+      socket.emit('user_connected', currentUser);
+    } else {
+      partnerIsOnline = false;
+      partnerLastSeen = data.lastSeen;
+      if (dot) {
+        dot.classList.remove('online');
+        dot.classList.add('offline');
+      }
+    }
+  }
+});
+
 
 socket.on('updatePartnerLocation', (data) => {
   if (data.user === currentUser) {
@@ -1170,7 +1205,7 @@ let isLongPress = false;
 if (partnerStatusDot) {
   const startPress = (e) => {
     isLongPress = false;
-    
+
     pressTimer = setTimeout(() => {
       isLongPress = true;
       triggerHeartbeatSent();
@@ -1179,7 +1214,7 @@ if (partnerStatusDot) {
 
   const endPress = (e) => {
     clearTimeout(pressTimer);
-    
+
     if (!isLongPress) {
       showLastSeenInfo();
     }
@@ -1194,7 +1229,7 @@ if (partnerStatusDot) {
   partnerStatusDot.addEventListener('mouseleave', cancelPress);
 
   partnerStatusDot.addEventListener('touchstart', (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     startPress(e);
   });
   partnerStatusDot.addEventListener('touchend', endPress);
@@ -1215,8 +1250,49 @@ function triggerHeartbeatSent() {
   }
 }
 
+// Kısa tıklandığında son görülmeyi gösteren fonksiyon
 function showLastSeenInfo() {
-  alert(`${partner.toUpperCase()} kullanıcısının son görülme durumu...`);
+  const prettyPartnerName = partner === 'elif' ? 'Elif' : 'Alptürk';
+
+  if (partnerIsOnline) {
+    showToast(`Canın sevgilin ${prettyPartnerName} şu an uygulamanın içinde! 🟢`);
+  } else if (partnerLastSeen) {
+    showToast(`${prettyPartnerName} Son Görülme: ${timeAgo(partnerLastSeen)} ⚪`);
+  } else {
+    showToast(`${prettyPartnerName} şu an çevrimdışı. (Uygulamaya girdiğinde senkronize olacak)`);
+  }
+}
+
+// Zamanı "5 dakika önce" gibi tatlı bir formata çeviren matematik motoru
+function timeAgo(dateString) {
+  const past = new Date(dateString);
+  const now = new Date();
+  const diffMins = Math.floor((now - past) / 60000);
+
+  if (diffMins < 1) return "Saniyeler önce buralardaydı...";
+  if (diffMins < 60) return `${diffMins} dakika önce`;
+
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} saat önce`;
+
+  return past.toLocaleDateString('tr-TR');
+}
+
+// ZARİF BİLDİRİM GÖSTERİCİ
+function showToast(message) {
+  const toast = document.getElementById('toast-notification');
+  if (!toast) return;
+
+  // Mesajı kutunun içine yaz
+  toast.innerText = message;
+
+  // Görünür yap (CSS'teki 'show' sınıfını ekle)
+  toast.classList.add('show');
+
+  // 3 saniye (3000ms) bekle ve sonra gizle
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
 }
 
 // ==========================================
@@ -1227,7 +1303,7 @@ if (typeof socket !== 'undefined') {
     console.log("💓 Karşı taraftan kalp atışı geldi:", data);
 
     if (navigator.vibrate) {
-      navigator.vibrate([200, 100, 200]); 
+      navigator.vibrate([200, 100, 200]);
     }
 
     // Sinyali kim gönderdiyse (data.from), ekranda ONUN lambasını kırmızı yapıp attırıyoruz
