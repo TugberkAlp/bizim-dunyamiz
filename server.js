@@ -507,7 +507,7 @@ app.post('/api/pet-chat', async (req, res) => {
     });
 
     const completion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
+      model: "openai/gpt-oss-120b",
       messages: messagesForGroq,
       temperature: 0.7,
       max_tokens: 150
@@ -556,7 +556,7 @@ async function triggerGalaksiIntervention(io) {
 
     // 5. Groq'tan çakalca cevabı iste
     const completion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
+      model: "openai/gpt-oss-120b",
       messages: messagesForGroq,
       temperature: 0.8,
       max_tokens: 100
