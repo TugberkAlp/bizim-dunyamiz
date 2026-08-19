@@ -295,6 +295,7 @@ function renderSpecialDays() {
   });
 }
 
+// 1. Veriyi Çekerken Notu da Hafızaya Al
 async function loadPeriodData() {
   try {
     const response = await fetch(SERVER_URL + '/api/period');
@@ -302,14 +303,66 @@ async function loadPeriodData() {
 
     if (data && data.lastStartDate) {
       periodData.lastStartDate = data.lastStartDate;
+      periodData.note = data.note; // YENİ: Notu da kaydediyoruz
     }
-
     renderPeriodTracker();
   } catch (error) {
     console.log("Period verisi çekilemedi:", error);
     renderPeriodTracker();
   }
 }
+
+// 2. Takvimi Çizerken Notu Ekrana Bas (renderPeriodTracker fonksiyonunun sonuna ekle)
+// ... (if-else bloklarının hemen altına, actionArea kodlarından önce)
+const noteDisplay = document.getElementById('period-note-display');
+if (noteDisplay) {
+  if (periodData.note) {
+    noteDisplay.innerHTML = `📝 <strong>Elif'in Notu:</strong> ${periodData.note}`;
+    noteDisplay.style.display = "block";
+  } else {
+    noteDisplay.style.display = "none";
+  }
+}
+// ...
+
+// 3. Formu Sunucuya (Veritabanına) Gönderme İşlemi
+document.getElementById('update-period-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const newDate = document.getElementById('new-period-date').value;
+  const note = document.getElementById('period-note').value;
+
+  if (!newDate) return;
+
+  const btn = this.querySelector('button[type="submit"]');
+  const originalText = btn.innerText;
+  btn.innerText = "Güncelleniyor...";
+  btn.disabled = true;
+
+  try {
+    const response = await fetch(`${SERVER_URL}/api/period`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lastStartDate: newDate, note: note })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      periodData.lastStartDate = data.lastStartDate;
+      periodData.note = data.note;
+      renderPeriodTracker(); // Ekranı yeni verilerle tazele
+      this.reset();
+      closePeriodModal();
+      showToast("Takvim başarıyla güncellendi 🌸");
+    }
+  } catch (error) {
+    console.error("Döngü güncellenemedi:", error);
+    showToast("Bağlantı hatası oluştu!");
+  } finally {
+    btn.innerText = originalText;
+    btn.disabled = false;
+  }
+});
 
 function renderPeriodTracker() {
   const today = new Date();
@@ -1339,7 +1392,7 @@ async function fetchDailyQuestion() {
   try {
     console.log("Sunucuya soru isteği atılıyor...");
     const response = await fetch(`${SERVER_URL}/api/daily-question?user=${currentUser}`);
-    
+
     // Eğer sunucudan 500 veya 404 gibi bir hata dönerse bunu yakalayalım
     if (!response.ok) {
       const errorText = await response.text();
@@ -1360,7 +1413,7 @@ async function fetchDailyQuestion() {
 
     // Kendi cevabımızı verip vermediğimizi kontrol et
     const myAnswer = currentUser === 'alpturk' ? data.alpturkAnswer : data.elifAnswer;
-    
+
     document.getElementById('dq-answers-area').style.display = 'block';
 
     if (!myAnswer) {

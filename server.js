@@ -249,6 +249,9 @@ app.post('/api/period', async (req, res) => {
 
     await yeniPeriod.save();
 
+    // YENİ EKLENTİ: Elif güncellediği an Alptürk'ün telefonuna bildirim gitsin
+    sendSystemNotification('alpturk', '🌸 Döngü Güncellendi', 'Elif döngü takvimini güncelledi. Sana bir not bırakmış olabilir!');
+
     res.status(201).json(yeniPeriod);
   } catch (error) {
     console.log("Period kaydedilemedi:", error);
