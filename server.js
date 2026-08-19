@@ -648,7 +648,7 @@ app.get('/api/daily-question', async (req, res) => {
           { role: "user", content: prompt }
         ],
         temperature: 0.9,
-        max_tokens: 100
+        max_tokens: 500
       });
 
       // GROQ'tan gelen cevabı konsola yazdırıp görelim ki ne döndüğünü bilelim
