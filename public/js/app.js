@@ -1337,9 +1337,18 @@ function closeDailyQuestionModal() {
 
 async function fetchDailyQuestion() {
   try {
-    // Sunucudan soruyu kendi adımızla (currentUser) istiyoruz
+    console.log("Sunucuya soru isteği atılıyor...");
     const response = await fetch(`${SERVER_URL}/api/daily-question?user=${currentUser}`);
+    
+    // Eğer sunucudan 500 veya 404 gibi bir hata dönerse bunu yakalayalım
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Sunucu Hatası:", response.status, errorText);
+      throw new Error(`Sunucu Hatası: ${response.status}`);
+    }
+
     const data = await response.json();
+    console.log("Sunucudan gelen veri:", data);
 
     // Soruyu ve Tarihi Ekrana Yazdır
     document.getElementById('dq-date').innerText = data.date;
@@ -1351,20 +1360,19 @@ async function fetchDailyQuestion() {
 
     // Kendi cevabımızı verip vermediğimizi kontrol et
     const myAnswer = currentUser === 'alpturk' ? data.alpturkAnswer : data.elifAnswer;
-
+    
     document.getElementById('dq-answers-area').style.display = 'block';
 
     if (!myAnswer) {
-      // Henüz cevaplamadıysak, yazma formunu göster
       document.getElementById('dq-input-area').style.display = 'block';
     } else {
-      // Cevapladıysak formu gizle
       document.getElementById('dq-input-area').style.display = 'none';
     }
 
   } catch (error) {
-    console.error("Soru çekilemedi:", error);
-    document.getElementById('dq-question-box').innerText = "Bağlantı hatası. Kahven soğudu galiba ☕";
+    // Hatayı tarayıcı konsoluna detaylıca basıyoruz
+    console.error("Soru çekilemedi detaylı hata:", error);
+    document.getElementById('dq-question-box').innerText = "Bağlantı hatası. Kahven soğudu galiba ☕\n(Detaylar F12 Konsolunda)";
   }
 }
 

@@ -621,15 +621,19 @@ app.post('/api/pet-status/update', async (req, res) => {
   }
 });
 
-app.get('./api/daily-question', async (req, res) => {
+// ==========================================
+// GÜNÜN ÇİFT SORUSU (GET: Soruyu Getir)
+// ==========================================
+app.get('/api/daily-question', async (req, res) => {
   try {
-    const { user } = req.query;
-    const today = new Date().toISOString.split('T')[0];
+    const { user } = req.query; // İsteği kim attı? (?user=alpturk şeklinde gelecek)
+    const today = new Date().toISOString().split('T')[0]; // "2026-08-19" formatında bugünün tarihi
 
     let dailyQ = await DailyQuestion.findOne({ date: today });
 
+    // 1. EĞER BUGÜN İÇİN SORU YOKSA: GROQ'A YAZDIRALIM
     if (!dailyQ) {
-      console.log("Bugünün sorusu yok, Qroq'tan yeni soru isteniyor...");
+      console.log("Bugünün sorusu yok, Groq'tan yeni soru isteniyor...");
 
       const prompt = `Sen Alptürk ve Elif çifti için her gün tek bir etkileşimli soru hazırlayan yaratıcı bir asistansın. Bazen çok romantik, bazen gelecekle ilgili, bazen de inanılmaz absürt ve komik tek bir soru sor. Sadece soruyu yaz, ekstra hiçbir açıklama yapma.`;
 
@@ -642,6 +646,7 @@ app.get('./api/daily-question', async (req, res) => {
 
       const newQuestionText = completion.choices[0]?.message?.content || "Sence aşkın rengi olsaydı, bizimki hangi renk olurdu?";
 
+      // Yeni soruyu veritabanına kaydet
       dailyQ = new DailyQuestion({
         date: today,
         question: newQuestionText
@@ -649,6 +654,8 @@ app.get('./api/daily-question', async (req, res) => {
       await dailyQ.save();
     }
 
+    // 2. GİZLİLİK FİLTRESİ (SPOILER KORUMASI)
+    // Gerçek veriyi bozmamak için kopyasını oluşturuyoruz
     const responseData = {
       date: dailyQ.date,
       question: dailyQ.question,
@@ -670,39 +677,44 @@ app.get('./api/daily-question', async (req, res) => {
     }
 
     res.json(responseData);
+
   } catch (error) {
     console.error("Günün sorusu hatası:", error);
     res.status(500).json({ error: "Soru getirilemedi." });
   }
 });
 
+
+// ==========================================
+// GÜNÜN ÇİFT SORUSU (POST: Cevabı Kaydet)
+// ==========================================
 app.post('/api/daily-question/answer', async (req, res) => {
-    try {
-        const { user, answer } = req.body;
-        const today = new Date().toISOString().split('T')[0];
+  try {
+    const { user, answer } = req.body;
+    const today = new Date().toISOString().split('T')[0];
 
-        let dailyQ = await DailyQuestion.findOne({ date: today });
-        if(!dailyQ) return res.status(404).json({error: "Bugünün sorusu bulunamadı!"});
+    let dailyQ = await DailyQuestion.findOne({ date: today });
+    if (!dailyQ) return res.status(404).json({ error: "Bugünün sorusu bulunamadı!" });
 
-        // Kim cevaplıyorsa onun hanesine yaz
-        if (user === 'alpturk') {
-            dailyQ.alpturkAnswer = answer;
-        } else if (user === 'elif') {
-            dailyQ.elifAnswer = answer;
-        }
-
-        await dailyQ.save();
-        res.json({ success: true });
-
-        // Karşı taraf cevapladığında diğerinin telefonuna bildirim gitsin
-        const partner = user === 'alpturk' ? 'elif' : 'alpturk';
-        const prettyName = user === 'alpturk' ? 'Alptürk' : 'Elif';
-        sendSystemNotification(partner, "Günün Sorusu! ☕", `${prettyName} bugünün sorusunu cevapladı. Sıra sende!`);
-
-    } catch (error) {
-         console.error("Cevap kaydetme hatası:", error);
-         res.status(500).json({ error: "Cevap kaydedilemedi." });
+    // Kim cevaplıyorsa onun hanesine yaz
+    if (user === 'alpturk') {
+      dailyQ.alpturkAnswer = answer;
+    } else if (user === 'elif') {
+      dailyQ.elifAnswer = answer;
     }
+
+    await dailyQ.save();
+    res.json({ success: true });
+
+    // Karşı taraf cevapladığında diğerinin telefonuna bildirim gitsin
+    const partner = user === 'alpturk' ? 'elif' : 'alpturk';
+    const prettyName = user === 'alpturk' ? 'Alptürk' : 'Elif';
+    sendSystemNotification(partner, "Günün Sorusu! ☕", `${prettyName} bugünün sorusunu cevapladı. Sende sıra!`);
+
+  } catch (error) {
+    console.error("Cevap kaydetme hatası:", error);
+    res.status(500).json({ error: "Cevap kaydedilemedi." });
+  }
 });
 
 setInterval(async () => {
