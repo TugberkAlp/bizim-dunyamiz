@@ -631,10 +631,6 @@ app.get('/api/daily-question', async (req, res) => {
 
     let dailyQ = await DailyQuestion.findOne({ date: today });
 
-    // BUGÜNÜN KAYDINI SİL (Sistemi test etmek için bugünkü soruyu siliyoruz)
-    await DailyQuestion.deleteMany({ date: today });
-    dailyQ = await DailyQuestion.findOne({ date: today });
-
     // 1. EĞER BUGÜN İÇİN SORU YOKSA: GROQ'A YAZDIRALIM
     if (!dailyQ) {
       console.log("Bugünün sorusu yok, Groq'tan yeni soru isteniyor...");
