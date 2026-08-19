@@ -631,26 +631,35 @@ app.get('/api/daily-question', async (req, res) => {
 
     let dailyQ = await DailyQuestion.findOne({ date: today });
 
-    // GEÇİCİ TEMİZLİK: Eğer dünkü/bugünkü hatalı kayıtlar varsa silip baştan sormasını sağlayalım. 
-    // (Bu sorunun düzeldiğini gördükten sonra aşağıdaki tek satırı silebilirsin)
-    await DailyQuestion.deleteMany({ question: "Sence aşkın rengi olsaydı, bizimki hangi renk olurdu?" });
+    // BUGÜNÜN KAYDINI SİL (Sistemi test etmek için bugünkü soruyu siliyoruz)
+    await DailyQuestion.deleteMany({ date: today });
     dailyQ = await DailyQuestion.findOne({ date: today });
 
     // 1. EĞER BUGÜN İÇİN SORU YOKSA: GROQ'A YAZDIRALIM
     if (!dailyQ) {
       console.log("Bugünün sorusu yok, Groq'tan yeni soru isteniyor...");
 
-      const prompt = `Sen Alptürk ve Elif çifti için her gün tek bir etkileşimli soru hazırlayan yaratıcı bir asistansın. Bazen çok romantik, bazen gelecekle ilgili, bazen de inanılmaz absürt ve komik tek bir soru sor. Sadece soruyu yaz, ekstra hiçbir açıklama yapma.`;
+      const prompt = `Sen yaratıcı bir asistansın. Bir çift için sadece tek bir soru üret. Soru romantik, absürt veya felsefi olabilir. Yalnızca soruyu yaz, başka hiçbir kelime veya açıklama kullanma.`;
 
       const completion = await groq.chat.completions.create({
         model: "openai/gpt-oss-120b",
-        // DÜZELTME: Yeni modelin cevap verebilmesi için 'system' yerine 'user' yaptık
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "system", content: "Sen sadece tek bir soru üreten bir makinesin." },
+          { role: "user", content: prompt }
+        ],
         temperature: 0.9,
         max_tokens: 100
       });
 
-      const newQuestionText = completion.choices[0]?.message?.content || "Yedek Soru: Zombi istilası başlasa ilk hangi silahı alırdın?";
+      // GROQ'tan gelen cevabı konsola yazdırıp görelim ki ne döndüğünü bilelim
+      console.log("Groq'tan Gelen Ham Cevap:", completion.choices[0]?.message);
+
+      let newQuestionText = completion.choices[0]?.message?.content;
+
+      // Eğer içerik yine boş gelirse diye güvenlik önlemi
+      if (!newQuestionText || newQuestionText.trim() === "") {
+        newQuestionText = "Yapay zeka bugün sessiz kaldı... Peki sence zaman yolculuğu mümkün olsa, hangi yıla gitmek isterdin?";
+      }
 
       // Yeni soruyu veritabanına kaydet
       dailyQ = new DailyQuestion({
