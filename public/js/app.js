@@ -1316,3 +1316,102 @@ if (typeof socket !== 'undefined') {
     }
   });
 }
+
+// ==========================================
+// GÜNÜN ÇİFT SORUSU (FRONTEND MANTIĞI)
+// ==========================================
+
+function openDailyQuestionModal() {
+  document.getElementById('daily-question-modal').style.display = 'flex';
+  document.getElementById('dq-answers-area').style.display = 'none';
+  document.getElementById('dq-input-area').style.display = 'none';
+  document.getElementById('dq-question-box').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Groq soruyu hazırlıyor...';
+
+  fetchDailyQuestion();
+}
+
+function closeDailyQuestionModal() {
+  document.getElementById('daily-question-modal').style.display = 'none';
+  document.getElementById('dq-my-answer').value = ''; // Kutuyu temizle
+}
+
+async function fetchDailyQuestion() {
+  try {
+    // Sunucudan soruyu kendi adımızla (currentUser) istiyoruz
+    const response = await fetch(`${SERVER_URL}/api/daily-question?user=${currentUser}`);
+    const data = await response.json();
+
+    // Soruyu ve Tarihi Ekrana Yazdır
+    document.getElementById('dq-date').innerText = data.date;
+    document.getElementById('dq-question-box').innerText = data.question;
+
+    // Cevapları Ekrana Yazdır
+    formatAnswerDisplay('dq-alpturk-display', data.alpturkAnswer);
+    formatAnswerDisplay('dq-elif-display', data.elifAnswer);
+
+    // Kendi cevabımızı verip vermediğimizi kontrol et
+    const myAnswer = currentUser === 'alpturk' ? data.alpturkAnswer : data.elifAnswer;
+
+    document.getElementById('dq-answers-area').style.display = 'block';
+
+    if (!myAnswer) {
+      // Henüz cevaplamadıysak, yazma formunu göster
+      document.getElementById('dq-input-area').style.display = 'block';
+    } else {
+      // Cevapladıysak formu gizle
+      document.getElementById('dq-input-area').style.display = 'none';
+    }
+
+  } catch (error) {
+    console.error("Soru çekilemedi:", error);
+    document.getElementById('dq-question-box').innerText = "Bağlantı hatası. Kahven soğudu galiba ☕";
+  }
+}
+
+// Cevapların kilitli mi yoksa açık mı olduğunu kontrol eden yardımcı fonksiyon
+function formatAnswerDisplay(elementId, answerText) {
+  const el = document.getElementById(elementId);
+  if (!answerText) {
+    el.innerHTML = '<span class="locked-answer">Henüz cevaplamadı... ⏳</span>';
+  } else if (answerText.includes('🔒')) {
+    el.innerHTML = `<span class="locked-answer">${answerText}</span>`;
+  } else {
+    el.innerHTML = `<span class="revealed-answer">${answerText}</span>`;
+  }
+}
+
+async function submitDailyAnswer() {
+  const answerInput = document.getElementById('dq-my-answer');
+  const answerText = answerInput.value.trim();
+
+  if (answerText === '') {
+    alert("Boş cevap gönderemezsin! 🤨");
+    return;
+  }
+
+  // Gönderirken butonu pasifleştirelim ki iki kere basılmasın
+  const btn = document.querySelector('#dq-input-area .btn-save');
+  const originalText = btn.innerText;
+  btn.innerText = "Gönderiliyor...";
+  btn.disabled = true;
+
+  try {
+    const response = await fetch(`${SERVER_URL}/api/daily-question/answer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: currentUser, answer: answerText })
+    });
+
+    if (response.ok) {
+      // Cevap başarıyla gitti, verileri baştan çek ve ekranı tazele
+      fetchDailyQuestion();
+    }
+  } catch (error) {
+    console.error("Cevap gönderilemedi:", error);
+    alert("Bir hata oluştu, tekrar dene!");
+  } finally {
+    btn.innerText = originalText;
+    btn.disabled = false;
+  }
+}
+

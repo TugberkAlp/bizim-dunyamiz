@@ -185,3 +185,33 @@
   /* Yukarı doğru süzülerek yerine oturur */
   bottom: 40px;
 }
+
+/* GÜNÜN SORUSU CEVAP KUTULARI */
+.answer-box {
+  text-align: left;
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.answer-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-light);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.locked-answer {
+  color: #E74C3C; /* Kilitliyse dikkat çekici kırmızı */
+  font-style: italic;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.revealed-answer {
+  color: var(--text-dark);
+  font-size: 14px;
+}

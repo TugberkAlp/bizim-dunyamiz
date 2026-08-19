@@ -9,6 +9,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const User = require('./models/User');
 const State = require('./models/State');
+const DailyQuestion = require('./models/DailyQuestion');
 
 // --- KEDİ AI ---
 const { Groq } = require('groq-sdk');
@@ -420,7 +421,7 @@ io.on('connection', (socket) => {
   // 1. Kullanıcı uygulamayı açtığında
   socket.on('user_connected', (username) => {
     onlineUsers[socket.id] = username;
-    
+
     // Karşı tarafa "Geldi!" diye haber veriyoruz
     socket.broadcast.emit('user_status', { user: username, status: 'online' });
   });
@@ -431,10 +432,10 @@ io.on('connection', (socket) => {
     if (username) {
       const now = new Date();
       // Karşı tarafa "Çıktı ve son saati bu" diyoruz
-      socket.broadcast.emit('user_status', { 
-        user: username, 
-        status: 'offline', 
-        lastSeen: now 
+      socket.broadcast.emit('user_status', {
+        user: username,
+        status: 'offline',
+        lastSeen: now
       });
       delete onlineUsers[socket.id];
       console.log('Bir cihaz ayrıldı:', socket.id);
@@ -618,6 +619,90 @@ app.post('/api/pet-status/update', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Durum güncellenemedi" });
   }
+});
+
+app.get('./api/daily-question', async (req, res) => {
+  try {
+    const { user } = req.query;
+    const today = new Date().toISOString.split('T')[0];
+
+    let dailyQ = await DailyQuestion.findOne({ date: today });
+
+    if (!dailyQ) {
+      console.log("Bugünün sorusu yok, Qroq'tan yeni soru isteniyor...");
+
+      const prompt = `Sen Alptürk ve Elif çifti için her gün tek bir etkileşimli soru hazırlayan yaratıcı bir asistansın. Bazen çok romantik, bazen gelecekle ilgili, bazen de inanılmaz absürt ve komik tek bir soru sor. Sadece soruyu yaz, ekstra hiçbir açıklama yapma.`;
+
+      const completion = await groq.chat.completions.create({
+        model: "openai/gpt-oss-120b", // Güncel açık kaynak modelimiz
+        messages: [{ role: "system", content: prompt }],
+        temperature: 0.9, // Biraz daha yaratıcı ve absürt olması için yüksek tutuyoruz
+        max_tokens: 100
+      });
+
+      const newQuestionText = completion.choices[0]?.message?.content || "Sence aşkın rengi olsaydı, bizimki hangi renk olurdu?";
+
+      dailyQ = new DailyQuestion({
+        date: today,
+        question: newQuestionText
+      });
+      await dailyQ.save();
+    }
+
+    const responseData = {
+      date: dailyQ.date,
+      question: dailyQ.question,
+      alpturkAnswer: dailyQ.alpturkAnswer,
+      elifAnswer: dailyQ.elifAnswer
+    };
+
+    // Eğer isteği sen atıyorsan ve sen cevaplamadıysan, Elif'in cevabını sansürle
+    if (user === 'alpturk') {
+      if (!dailyQ.alpturkAnswer && dailyQ.elifAnswer) {
+        responseData.elifAnswer = "🔒 Cevabını verdi! Görmek için sen de cevapla.";
+      }
+    }
+    // Eğer isteği Elif atıyorsa ve o cevaplamadıysa, senin cevabını sansürle
+    else if (user === 'elif') {
+      if (!dailyQ.elifAnswer && dailyQ.alpturkAnswer) {
+        responseData.alpturkAnswer = "🔒 Cevabını verdi! Görmek için sen de cevapla.";
+      }
+    }
+
+    res.json(responseData);
+  } catch (error) {
+    console.error("Günün sorusu hatası:", error);
+    res.status(500).json({ error: "Soru getirilemedi." });
+  }
+});
+
+app.post('/api/daily-question/answer', async (req, res) => {
+    try {
+        const { user, answer } = req.body;
+        const today = new Date().toISOString().split('T')[0];
+
+        let dailyQ = await DailyQuestion.findOne({ date: today });
+        if(!dailyQ) return res.status(404).json({error: "Bugünün sorusu bulunamadı!"});
+
+        // Kim cevaplıyorsa onun hanesine yaz
+        if (user === 'alpturk') {
+            dailyQ.alpturkAnswer = answer;
+        } else if (user === 'elif') {
+            dailyQ.elifAnswer = answer;
+        }
+
+        await dailyQ.save();
+        res.json({ success: true });
+
+        // Karşı taraf cevapladığında diğerinin telefonuna bildirim gitsin
+        const partner = user === 'alpturk' ? 'elif' : 'alpturk';
+        const prettyName = user === 'alpturk' ? 'Alptürk' : 'Elif';
+        sendSystemNotification(partner, "Günün Sorusu! ☕", `${prettyName} bugünün sorusunu cevapladı. Sıra sende!`);
+
+    } catch (error) {
+         console.error("Cevap kaydetme hatası:", error);
+         res.status(500).json({ error: "Cevap kaydedilemedi." });
+    }
 });
 
 setInterval(async () => {

@@ -193,7 +193,7 @@
           <div class="table-container">
             <div class="coffee-table">
               <!-- Kahve Falı Fincanı -->
-              <div class="coffee-cup-container" onclick="alert('Günlük Çift Falınız Yakında! ☕')">
+              <div class="coffee-cup-container" onclick="openDailyQuestionModal()">
                 <div class="steam s-1"></div>
                 <div class="steam s-2"></div>
                 <div class="coffee-cup">
@@ -414,6 +414,46 @@
 
           <button type="submit" class="btn-save">Listeye Ekle ✨</button>
         </form>
+      </div>
+    </div>
+
+    <!-- GÜNÜN SORUSU MODALI -->
+    <div id="daily-question-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-box" style="text-align: center; width: 90%; max-width: 400px;">
+        <span class="close-btn" onclick="closeDailyQuestionModal()"><i class="fa-solid fa-xmark"></i></span>
+
+        <h3>Günün Sorusu ☕</h3>
+        <p id="dq-date" style="font-size: 12px; color: var(--text-light); margin-bottom: 15px;"></p>
+
+        <!-- Sorunun Yazacağı Kutu -->
+        <div id="dq-question-box"
+          style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; font-size: 15px; color: var(--primary);">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Groq Düşünüyor...
+        </div>
+
+        <!-- Cevapların Görüneceği Alan -->
+        <div id="dq-answers-area" style="display: none;">
+          <!-- Alptürk'ün Alanı -->
+          <div class="answer-box">
+            <span class="answer-label">🧑🏻 Alptürk'ün Cevabı:</span>
+            <div id="dq-alpturk-display"></div>
+          </div>
+
+          <!-- Elif'in Alanı -->
+          <div class="answer-box" style="margin-top: 10px;">
+            <span class="answer-label">👩🏻 Elif'in Cevabı:</span>
+            <div id="dq-elif-display"></div>
+          </div>
+        </div>
+
+        <!-- Cevap Yazma Formu (Sadece henüz cevaplamadıysan görünür) -->
+        <div id="dq-input-area" style="display: none; margin-top: 20px;">
+          <textarea id="dq-my-answer" rows="3" placeholder="Sence cevabı ne? Buraya yaz..."
+            style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #ccc; font-family: inherit; resize: none;"></textarea>
+          <button onclick="submitDailyAnswer()" class="btn-save" style="margin-top: 10px; width: 100%;">Cevabımı Gönder
+            ✨</button>
+        </div>
+
       </div>
     </div>
 
