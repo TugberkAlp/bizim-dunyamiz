@@ -631,20 +631,27 @@ app.get('/api/daily-question', async (req, res) => {
 
     let dailyQ = await DailyQuestion.findOne({ date: today });
 
+    // GEÇİCİ TEMİZLİK: Eğer dünkü/bugünkü hatalı kayıtlar varsa silip baştan sormasını sağlayalım. 
+    // (Bu sorunun düzeldiğini gördükten sonra aşağıdaki tek satırı silebilirsin)
+    await DailyQuestion.deleteMany({ question: "Sence aşkın rengi olsaydı, bizimki hangi renk olurdu?" });
+    dailyQ = await DailyQuestion.findOne({ date: today });
+
     // 1. EĞER BUGÜN İÇİN SORU YOKSA: GROQ'A YAZDIRALIM
+    i// 1. EĞER BUGÜN İÇİN SORU YOKSA: GROQ'A YAZDIRALIM
     if (!dailyQ) {
       console.log("Bugünün sorusu yok, Groq'tan yeni soru isteniyor...");
 
       const prompt = `Sen Alptürk ve Elif çifti için her gün tek bir etkileşimli soru hazırlayan yaratıcı bir asistansın. Bazen çok romantik, bazen gelecekle ilgili, bazen de inanılmaz absürt ve komik tek bir soru sor. Sadece soruyu yaz, ekstra hiçbir açıklama yapma.`;
 
       const completion = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b", // Güncel açık kaynak modelimiz
-        messages: [{ role: "system", content: prompt }],
-        temperature: 0.9, // Biraz daha yaratıcı ve absürt olması için yüksek tutuyoruz
+        model: "openai/gpt-oss-120b",
+        // DÜZELTME: Yeni modelin cevap verebilmesi için 'system' yerine 'user' yaptık
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.9,
         max_tokens: 100
       });
 
-      const newQuestionText = completion.choices[0]?.message?.content || "Sence aşkın rengi olsaydı, bizimki hangi renk olurdu?";
+      const newQuestionText = completion.choices[0]?.message?.content || "Yedek Soru: Zombi istilası başlasa ilk hangi silahı alırdın?";
 
       // Yeni soruyu veritabanına kaydet
       dailyQ = new DailyQuestion({
@@ -653,7 +660,6 @@ app.get('/api/daily-question', async (req, res) => {
       });
       await dailyQ.save();
     }
-
     // 2. GİZLİLİK FİLTRESİ (SPOILER KORUMASI)
     // Gerçek veriyi bozmamak için kopyasını oluşturuyoruz
     const responseData = {
